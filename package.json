@@ -34,6 +34,7 @@
     "@types/jest": "^23.3.10",
     "@types/webpack-env": "^1.13.9",
     "css-loader": "^1.0.1",
+    "firebase": "^7.0.0",
     "husky": "^1.2.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^25.0.0",
