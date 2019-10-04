@@ -1,5 +1,5 @@
 import { Component, h } from "preact";
-import { auth, database } from "../../components/firebase"
+import { auth } from "../../components/firebase"
 import SignIn from "../../components/SignIn"
 import SignOut from "../../components/SignOut"
 import User from "../../components/user"

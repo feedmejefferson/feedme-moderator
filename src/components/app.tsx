@@ -1,6 +1,7 @@
 import { Component, h } from "preact";
 import { Route, Router, RouterOnChangeArgs } from "preact-router";
 
+import FoodRoute from "../routes/food-route";
 import Home from "../routes/home";
 import Profile from "../routes/profile";
 import Header from "./header";
@@ -23,6 +24,7 @@ export default class App extends Component {
                 <Router onChange={this.handleRoute}>
                     <Route path="/" component={Home} />
                     <Route path="/profile/" component={Profile} />
+                    <Route path="/food/" component={FoodRoute} />
                 </Router>
             </div>
         );
