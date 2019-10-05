@@ -15,7 +15,7 @@ export default class FoodList extends Component<Props> {
       <div>
 
         <ul>
-          {foods.map((food, i) => <Food {...food} key={i} />)}
+    {foods.map((food, i) => <Food key={food.id} {...food} />)}
         </ul>
 
       </div>
