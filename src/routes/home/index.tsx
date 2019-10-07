@@ -1,5 +1,7 @@
 import { Component, h } from "preact";
+import Autocomplete from "../../components/autocomplete";
 import * as style from "./style.css";
+
 
 interface Props {}
 export default class Home extends Component<Props> {
@@ -8,6 +10,15 @@ export default class Home extends Component<Props> {
             <div class={style.home}>
                 <h1>Home</h1>
                 <p>This is the Home component.</p>
+                <Autocomplete suggestions={[
+                    "hello",
+                    "world",
+                    "you",
+                    "big",
+                    "fuzzy",
+                    "thing",
+                    "things"
+                ]}/>
             </div>
         );
     }
