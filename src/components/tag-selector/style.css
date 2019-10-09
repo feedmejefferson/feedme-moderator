@@ -1,0 +1,13 @@
+.tag-selector {
+  display: inline;
+}
+.list {
+  list-style: none;
+  padding: 0;
+  position: absolute;
+  background: white;
+  z-index: 500;
+}
+.active-suggestion {
+  background: lightblue;
+}

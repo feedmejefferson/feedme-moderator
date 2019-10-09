@@ -1,5 +1,6 @@
 import { Component, h } from 'preact';
 import Tag from '../tag';
+import NewTag from '../tag-new';
 import * as style from "./style.css";
 
 interface Props {
@@ -8,30 +9,57 @@ interface Props {
 }
 interface State {
   tags: string[];
+  active?: number;
 }
 
 export default class TagList extends Component<Props, State> {
-  public state = { 
-    tags: this.props.tags
+  public state: State = { 
+    tags: this.props.tags,
   }
-  public onUpdate= (tag: string, key: number) => {
+  public onToggle = (offset: number) => {
+    if(this.state.active===offset) {
+      this.setState({active: undefined})
+    } else {
+      this.setState({active: offset})
+    }
+    console.log(this.state.active)
+  }
+  public onUpdate = (tag: string, key: number) => {
     const tags = [...this.state.tags]
     tags[key]=tag;
-    this.setState({tags});
+    this.setState({tags, active: undefined});
   }
   public onDelete = (key: number) => {
     const tags = [...this.state.tags]
     tags.splice(key,1)
-    this.setState({tags});
+    this.setState({tags, active: undefined});
   }
-  public render({ }: Props, { tags }: State) {
+  public onAdd = (tag: string) => {
+    console.log(tag)
+    const tags = [...this.state.tags]
+    tags.push(tag)
+    this.setState({tags, active: undefined});
+  }
+
+  public render({ }: Props, { tags, active }: State) {
+    const length = tags.length;
     return (
       <ul class={style.tagList} >
-        {this.state.tags.map((tag, i)=>(
-          <Tag tag={tag} key={i} offset={i} 
-          onDelete={this.onDelete} 
-          onUpdate={this.onUpdate} />
-        ))}
+        {tags.map((tag, i)=>(
+          <li key={i} class={style.tagListItem}>
+            <Tag tag={tag} offset={i}
+            editable={i===active} 
+            onDelete={this.onDelete} 
+            onUpdate={this.onUpdate}
+            onToggle={this.onToggle} />
+          </li>
+          ))}
+        <li class={style.tagListItem} key={length}>
+          <NewTag onAdd={this.onAdd} 
+          offset={length}
+          editable={active===length}
+          onToggle={this.onToggle}/>
+        </li>
       </ul>
     );
   }

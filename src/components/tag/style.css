@@ -1,13 +1,6 @@
-.tag {
-  display: inline;
+.tag-button {
+  border-radius: 1em 0 0 1em;
 }
-.tag .tag-button {
-  border-radius: 1em 0% 0% 1em;
-  height: 2em;
-}
-.tag .delete-button {
-  border-radius: 0% 50% 50% 0%;
-  height: 2em;
-  width: 2em;
-  padding: 0;
+.delete-button {
+  border-radius: 0 1em 1em 0;
 }
