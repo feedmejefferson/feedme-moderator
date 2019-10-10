@@ -6,6 +6,7 @@ interface Props {
   value: string;
   onSelect: (newValue: string) => void;
   onEscape: () => void;
+  focus?: boolean;
 }
 interface State {
   activeSuggestion: number;
@@ -18,7 +19,6 @@ const filterSuggestions = (filter: string) => tags.filter(x=>x.toLowerCase().sta
 
 export default class TagSelector extends Component<Props, State> {
   public input: any = null;
-  // @ts-ignore
   public state = { 
     activeSuggestion: 0,
     filteredSuggestions: filterSuggestions(this.props.value),
@@ -27,7 +27,12 @@ export default class TagSelector extends Component<Props, State> {
   }
     
   public select(value: string) {
+    this.setState({userInput: value, filteredSuggestions: [value], activeSuggestion: 0})
     this.props.onSelect(value)
+  }
+  public escape = () => {
+    this.setState({showSuggestions: false})
+    this.props.onEscape()
   }
   public onChange = (e: any) => { 
     // @ts-ignore
@@ -60,7 +65,7 @@ export default class TagSelector extends Component<Props, State> {
         this.setState({activeSuggestion})
         break;
       case 27: // escape
-        this.props.onEscape()
+        this.escape()
         break;
       case 13: // enter
         const userInput = filteredSuggestions[activeSuggestion] || input
@@ -87,20 +92,22 @@ export default class TagSelector extends Component<Props, State> {
       >
         <input
           type="text"
+          name={this.state.userInput}
           tabIndex={0}
-          onBlur={this.props.onEscape}
+          onBlur={this.escape}
+          onFocus={e=>this.setState({showSuggestions: true})}
           onChange={this.onChange}
           onKeyUp={this.onChange}
           onKeyDown={this.onKeyDown}
           ref={i=>this.input=i}
           value={this.state.userInput}
         />
-        {suggestionsListComponent}
+        {this.state.showSuggestions && suggestionsListComponent}
       </div>
     );
   }
   public componentDidMount(){
-    if(this.input) {
+    if(this.input && this.props.focus) {
       this.input.focus()
     }
   }

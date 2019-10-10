@@ -22,7 +22,6 @@ export default class TagList extends Component<Props, State> {
     } else {
       this.setState({active: offset})
     }
-    console.log(this.state.active)
   }
   public onUpdate = (tag: string, key: number) => {
     const tags = [...this.state.tags]
@@ -35,7 +34,6 @@ export default class TagList extends Component<Props, State> {
     this.setState({tags, active: undefined});
   }
   public onAdd = (tag: string) => {
-    console.log(tag)
     const tags = [...this.state.tags]
     tags.push(tag)
     this.setState({tags, active: undefined});

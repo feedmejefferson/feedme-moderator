@@ -30,9 +30,9 @@ export default class Tag extends Component<Props> {
     return (
       <span key={offset}>
         {/* editable && <input type="text" value={tag} onChange={this.onChange} autofocus={true} onBlur={this.toggleOff} /> */}
-        { editable && <TagSelector value={tag} onSelect={this.onChange} onEscape={this.toggle} />}
-        { !editable && <button class={style.tagButton} onClick={this.toggle}>{tag}</button>}
-        <button class={style.deleteButton} onClick={this.onButtonClick}>X</button>
+        { editable && <TagSelector value={tag} onSelect={this.onChange} onEscape={this.toggle} focus={true} />}
+        { !editable && <button type="button" class={style.tagButton} onClick={this.toggle}>{tag}</button>}
+        <button type="button" class={style.deleteButton} onClick={this.onButtonClick}>X</button>
       </span>
     );
   }

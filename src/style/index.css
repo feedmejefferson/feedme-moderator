@@ -11,6 +11,10 @@ html, body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+input, button {
+  font-size: 1rem;
+}
+
 * {
 	box-sizing: border-box;
 }

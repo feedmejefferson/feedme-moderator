@@ -19,8 +19,8 @@ export default class NewTag extends Component<Props, State> {
   public render({ editable }: Props, { }: State) {
     return (
       <span>
-        { editable && <TagSelector value="" onSelect={this.props.onAdd} onEscape={this.toggle} />}
-        { !editable && <button class={style.addButton} onClick={this.toggle}>+</button>}
+        { editable && <TagSelector value="" onSelect={this.props.onAdd} onEscape={this.toggle} focus={true} />}
+        { !editable && <button type="button" class={style.addButton} onClick={this.toggle}>+</button>}
       </span>
     );
   }

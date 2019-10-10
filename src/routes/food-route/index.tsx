@@ -1,9 +1,7 @@
 import { Component, h } from "preact";
 import { firestore } from "../../components/firebase"
 import FoodList from "../../components/food-list"
-import SignIn from "../../components/SignIn"
-import SignOut from "../../components/SignOut"
-import User from "../../components/user"
+import TagSelector from "../../components/tag-selector";
 import * as style from "./style.css";
 
 interface Props {
@@ -41,16 +39,15 @@ export default class FoodRoute extends Component<Props, State> {
         e.preventDefault();
         this.filterFoods(this.state.filter);
     }
+    public handleFilter = (tag: string) => {
+        this.filterFoods(tag);
+    }
   
     public render({ }: Props, { foods, filter }: State) {
         return (
             
             <div class={style.profile}>
-                <form>
-                    <input type="text" name="filter" onChange={this.handleChange}
-                        value={filter}/>
-                    <button onClick={this.handleSubmit}>Filter</button>
-                </form>
+                <TagSelector value={filter||""} onSelect={this.handleFilter} onEscape={()=>{}} />
 
                 {foods && <FoodList foods={foods}/>}
             </div>

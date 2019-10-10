@@ -1,5 +1,6 @@
 import { Component, h } from 'preact';
 import { firestore } from '../firebase'
+import TagList from '../tag-list';
 import * as style from "./style.css";
 
 interface FoodModel {
@@ -22,6 +23,10 @@ export default class Food extends Component<Props, State> {
     // @ts-ignore
   this.setState({[e.target.name]: e.target.value})
   }
+  public handleUpdateTags = (newTags: string[]) => { 
+    this.setState({containsTags: newTags})
+  }
+
   public handleSubmit = (e: Event) => { 
     e.preventDefault();
     firestore.collection("foods").doc(this.state.id).set(this.state);
@@ -36,7 +41,7 @@ export default class Food extends Component<Props, State> {
               <input type="text" name="title" onChange={this.handleChange}
               value={title}/>
               <p>Originally Titled: {originTitle}</p>
-              <p>Tags: {containsTags.join(", ")}</p>
+              <p>Tags: <TagList tags={containsTags} updateTags={this.handleUpdateTags}/></p>
               <p>Author: {author}</p>
 {/*
               <label for="author">Author</label>
