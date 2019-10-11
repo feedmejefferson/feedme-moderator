@@ -15,7 +15,7 @@ interface State {
 export default class FoodRoute extends Component<Props, State> {
     public state = {
         foods: [],
-        filter: this.props.filter
+        filter: this.props.filter || ""
     };
 
     public foodstore = firestore.collection("foods");
@@ -23,7 +23,7 @@ export default class FoodRoute extends Component<Props, State> {
     public filterFoods = (filter: string) => {
         const query = filter && filter !== "" ? this.foodstore.where("containsTags", "array-contains", filter) : this.foodstore 
         query  // .orderBy("id").limit(5)
-            .get().then(q => {this.setState({foods: q.docs.map(doc => doc.data())})});
+            .get().then(q => {this.setState({filter, foods: q.docs.map(doc => doc.data())})});
     }
 
     // gets called when this route is navigated to
@@ -47,7 +47,7 @@ export default class FoodRoute extends Component<Props, State> {
         return (
             
             <div class={style.profile}>
-                <TagSelector value={filter||""} onSelect={this.handleFilter} onEscape={()=>{}} />
+                <TagSelector value={filter} onSelect={this.handleFilter} onEscape={()=>{this.handleFilter("")}} />
 
                 {foods && <FoodList foods={foods}/>}
             </div>

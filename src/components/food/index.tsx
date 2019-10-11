@@ -21,7 +21,7 @@ export default class Food extends Component<Props, State> {
 
   public handleChange = (e: Event) => { 
     // @ts-ignore
-  this.setState({[e.target.name]: e.target.value})
+    this.setState({[e.target.name]: e.target.value})
   }
   public handleUpdateTags = (newTags: string[]) => { 
     this.setState({containsTags: newTags})
@@ -32,7 +32,7 @@ export default class Food extends Component<Props, State> {
     firestore.collection("foods").doc(this.state.id).set(this.state);
   }
 
-    public render({  }: Props, { id, author, title, originTitle, containsTags }: State) {
+    public render({  }: Props, { id, author, title, originTitle, isTags, containsTags, descriptiveTags }: State) {
         return (
           <div class={style.food}>
             <h3>Profile: {id}</h3>
@@ -41,7 +41,9 @@ export default class Food extends Component<Props, State> {
               <input type="text" name="title" onChange={this.handleChange}
               value={title}/>
               <p>Originally Titled: {originTitle}</p>
-              <p>Tags: <TagList tags={containsTags} updateTags={this.handleUpdateTags}/></p>
+              <p>Main Tags: <TagList tags={isTags} updateTags={(tags)=>this.setState({isTags: tags})}/></p>
+              <p>Contains Tags: <TagList tags={containsTags} updateTags={(tags)=>this.setState({containsTags: tags})}/></p>
+              <p>Descriptive Tags: <TagList tags={descriptiveTags} updateTags={(tags)=>this.setState({descriptiveTags: tags})}/></p>
               <p>Author: {author}</p>
 {/*
               <label for="author">Author</label>

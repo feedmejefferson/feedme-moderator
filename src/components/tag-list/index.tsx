@@ -14,7 +14,7 @@ interface State {
 
 export default class TagList extends Component<Props, State> {
   public state: State = { 
-    tags: this.props.tags,
+    tags: !this.props.tags ? [] : this.props.tags,
   }
   public onToggle = (offset: number) => {
     if(this.state.active===offset) {
@@ -27,16 +27,19 @@ export default class TagList extends Component<Props, State> {
     const tags = [...this.state.tags]
     tags[key]=tag;
     this.setState({tags, active: undefined});
+    this.props.updateTags(tags);
   }
   public onDelete = (key: number) => {
     const tags = [...this.state.tags]
     tags.splice(key,1)
     this.setState({tags, active: undefined});
+    this.props.updateTags(tags);
   }
   public onAdd = (tag: string) => {
     const tags = [...this.state.tags]
     tags.push(tag)
     this.setState({tags, active: undefined});
+    this.props.updateTags(tags);
   }
 
   public render({ }: Props, { tags, active }: State) {

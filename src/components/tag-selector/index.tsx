@@ -31,7 +31,7 @@ export default class TagSelector extends Component<Props, State> {
     this.props.onSelect(value)
   }
   public escape = () => {
-    this.setState({showSuggestions: false})
+    this.setState({userInput:"",showSuggestions: false})
     this.props.onEscape()
   }
   public onChange = (e: any) => { 
@@ -53,16 +53,17 @@ export default class TagSelector extends Component<Props, State> {
     // @ts-ignore
     const key = e.keyCode;
     const input = e.currentTarget.value
+    const showSuggestions = true;
     let activeSuggestion = this.state.activeSuggestion
     const filteredSuggestions = this.state.filteredSuggestions;
     switch(key) {
       case 38: // up arrow
         activeSuggestion -= activeSuggestion === 0 ? 0 : 1;
-        this.setState({activeSuggestion})
+        this.setState({activeSuggestion, showSuggestions})
         break;
       case 40: // down arrow
         activeSuggestion += activeSuggestion < filteredSuggestions.length-1 ? 1 : 0;
-        this.setState({activeSuggestion})
+        this.setState({activeSuggestion, showSuggestions})
         break;
       case 27: // escape
         this.escape()
@@ -71,6 +72,8 @@ export default class TagSelector extends Component<Props, State> {
         const userInput = filteredSuggestions[activeSuggestion] || input
         this.select(userInput);
         break;
+      default:
+        this.setState({showSuggestions})
 
     }
   }
