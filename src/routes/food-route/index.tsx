@@ -15,7 +15,7 @@ interface State {
 export default class FoodRoute extends Component<Props, State> {
     public state = {
         foods: [],
-        filter: this.props.filter || ""
+        filter: ""
     };
 
     public foodstore = firestore.collection("foods");
@@ -28,17 +28,19 @@ export default class FoodRoute extends Component<Props, State> {
 
     // gets called when this route is navigated to
     public componentDidMount() {
-        this.filterFoods(this.state.filter);
+        if(this.state.filter !== this.props.filter){
+            this.filterFoods(this.props.filter);
+        }
     }
 
-    public handleChange = (e: Event) => {
-        // @ts-ignore
-        this.setState({filter: e.target.value})
-    }
-    public handleSubmit = (e: Event) => {
-        e.preventDefault();
-        this.filterFoods(this.state.filter);
-    }
+    // public handleChange = (e: Event) => {
+    //     // @ts-ignore
+    //     this.setState({filter: e.target.value})
+    // }
+    // public handleSubmit = (e: Event) => {
+    //     e.preventDefault();
+    //     this.filterFoods(this.state.filter);
+    // }
     public handleFilter = (tag: string) => {
         this.filterFoods(tag);
     }

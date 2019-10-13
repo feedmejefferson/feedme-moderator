@@ -1,4 +1,6 @@
 import { Component, h } from 'preact';
+import { firestore } from "../../components/firebase";
+import { TagType } from "../../types";
 import tagsJson from "../tag-list/tags.json";
 import * as style from "./style.css";
 
@@ -13,18 +15,31 @@ interface State {
   filteredSuggestions: string[];
   showSuggestions: boolean;
   userInput: string;
+  tags: TagType[];
 }
-const tags: string[] = tagsJson.tags;
-const filterSuggestions = (filter: string) => tags.filter(x=>x.toLowerCase().startsWith(filter.toLowerCase()))
-
+// const tags: string[] = tagsJson.tags;
+const filterSuggestions = (selector: TagSelector, value?: string): string[] => {
+  const tags = selector.state && selector.state.tags || [];
+  const filterValue = value && value.toLowerCase() || selector.props && selector.props.value && selector.props.value.toLowerCase() || "";
+  return tags.filter((x:TagType)=>x.id.startsWith(filterValue)).map((x:TagType)=>x.pretty)
+}
 export default class TagSelector extends Component<Props, State> {
   public input: any = null;
   public state = { 
     activeSuggestion: 0,
-    filteredSuggestions: filterSuggestions(this.props.value),
+    filteredSuggestions: filterSuggestions(this),
     showSuggestions: false,
-    userInput: this.props.value
+    userInput: this.props.value,
+    tags: []
   }
+  public tagstore = firestore.collection("tags");
+
+  public query = this.tagstore
+    // .where("containsTags", "array-contains", filter) : this.foodstore 
+    // query  // .orderBy("id").limit(5)
+         .get().then(q => {this.setState({tags: q.docs.map(doc => doc.data() as TagType)})});
+
+
     
   public select(value: string) {
     this.setState({userInput: value, filteredSuggestions: [value], activeSuggestion: 0})
@@ -37,7 +52,7 @@ export default class TagSelector extends Component<Props, State> {
   public onChange = (e: any) => { 
     // @ts-ignore
     const userInput = e.currentTarget.value;
-    const filteredSuggestions = filterSuggestions(userInput)
+    const filteredSuggestions = filterSuggestions(this, userInput)
     this.setState({filteredSuggestions, userInput})
   }
   public onClick = (e: any) => { 

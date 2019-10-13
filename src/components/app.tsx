@@ -4,6 +4,8 @@ import { Route, Router, RouterOnChangeArgs } from "preact-router";
 import FoodRoute from "../routes/food-route";
 import Home from "../routes/home";
 import Profile from "../routes/profile";
+import TagListRoute from "../routes/tag-list-route";
+import TagRoute from "../routes/tag-route";
 import Header from "./header";
 
 if ((module as any).hot) {
@@ -25,6 +27,8 @@ export default class App extends Component {
                     <Route path="/" component={Home} />
                     <Route path="/profile/" component={Profile} />
                     <Route path="/food/" component={FoodRoute} />
+                    <Route path="/tags/" component={TagListRoute} />
+                    <Route path="/tags/:tagId" component={TagRoute} />
                 </Router>
             </div>
         );

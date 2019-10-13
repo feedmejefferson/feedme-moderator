@@ -1,9 +1,10 @@
 import { Component, h } from 'preact';
+import { FoodType } from "../../types";
 import Food from "../food";
 // import * as style from "./style.css";
 
 interface Props {
-    foods: any[];
+    foods: FoodType[];
 }
 interface State {
   filter: string;

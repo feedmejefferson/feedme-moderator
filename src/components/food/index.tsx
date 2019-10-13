@@ -1,4 +1,5 @@
 import { Component, h } from 'preact';
+import { FoodType } from "../../types";
 import { firestore } from '../firebase'
 import TagList from '../tag-list';
 import * as style from "./style.css";
@@ -13,8 +14,8 @@ interface FoodModel {
   descriptiveTags: string[]
 }
 
-interface Props extends FoodModel {}
-interface State extends FoodModel {}
+interface Props extends FoodType {}
+interface State extends FoodType {}
 
 export default class Food extends Component<Props, State> {
   public state = { ...this.props }

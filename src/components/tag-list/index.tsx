@@ -46,7 +46,8 @@ export default class TagList extends Component<Props, State> {
     const length = tags.length;
     return (
       <ul class={style.tagList} >
-        {tags.map((tag, i)=>(
+        {console.log(tags)}
+        {tags && Array.isArray(tags) && tags.map((tag, i)=>(
           <li key={i} class={style.tagListItem}>
             <Tag tag={tag} offset={i}
             editable={i===active} 
