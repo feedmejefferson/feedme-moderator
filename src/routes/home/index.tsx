@@ -9,7 +9,7 @@ export default class Home extends Component<Props> {
         return (
             <div class={style.home}>
                 <h1>Home</h1>
-                <p>Welcome to the Feed Me, Jefferson! content currator.</p>
+                <p>Welcome to the Feed Me, Jefferson! content curator.</p>
                 <p>
                     Use the <Link activeClassName="" href="/food">Food</Link> tab
                     to explore food images and filter them by tags.

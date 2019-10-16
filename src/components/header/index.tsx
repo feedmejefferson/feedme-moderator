@@ -6,7 +6,7 @@ export default class Header extends Component {
     public render() {
         return (
             <header class={style.header}>
-                <h1>Feed Me Content Currator</h1>
+                <h1>Feed Me Content Curator</h1>
                 <nav>
                     <Link activeClassName={style.active} href="/">
                         Home
