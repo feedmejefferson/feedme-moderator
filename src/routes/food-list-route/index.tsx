@@ -27,7 +27,7 @@ export default class FoodListRoute extends Component<Props, State> {
 
     public filterFoods = (filter: string) => {
         const appliedFilter = filter || "";
-        const queryFilter = (appliedFilter === "") ? foodstore : foodstore.where("containsTags", "array-contains", filter);
+        const queryFilter = (appliedFilter === "") ? foodstore : foodstore.where("allTags", "array-contains", filter);
         queryFilter.limit(pageSize).get().then((snapshots: any) => {
             const docs = snapshots.docs;
             const lastRef = docs[pageSize-1];
