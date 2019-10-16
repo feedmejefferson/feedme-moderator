@@ -1,7 +1,5 @@
 import { Component, h } from 'preact';
 import { firestore } from "../../components/firebase";
-import { TagType } from "../../types";
-import tagsJson from "../tag-list/tags.json";
 import * as style from "./style.css";
 
 interface Props {
@@ -14,30 +12,31 @@ interface State {
   activeSuggestion: number;
   filteredSuggestions: string[];
   showSuggestions: boolean;
-  userInput: string;
-  tags: TagType[];
+  userInput?: string;
+  tags: string[];
 }
-// const tags: string[] = tagsJson.tags;
-const filterSuggestions = (selector: TagSelector, value?: string): string[] => {
-  const tags = selector.state && selector.state.tags || [];
-  const filterValue = value && value.toLowerCase() || selector.props && selector.props.value && selector.props.value.toLowerCase() || "";
-  return tags.filter((x:TagType)=>x.id.startsWith(filterValue)).map((x:TagType)=>x.pretty)
+const filterSuggestions = (tags: string[], pattern: string): string[] => {
+  const filterValue = pattern && pattern.toLowerCase() || "";
+  return tags.filter(tag=>tag.startsWith(filterValue))
 }
+const tagPromise = firestore.collection("indexes").doc("tagIds").get();
+
 export default class TagSelector extends Component<Props, State> {
   public input: any = null;
-  public state = { 
+  public state: State = { 
     activeSuggestion: 0,
-    filteredSuggestions: filterSuggestions(this),
+    filteredSuggestions: [],
     showSuggestions: false,
-    userInput: this.props.value,
     tags: []
   }
-  public tagstore = firestore.collection("tags");
 
-  public query = this.tagstore
-    // .where("containsTags", "array-contains", filter) : this.foodstore 
-    // query  // .orderBy("id").limit(5)
-         .get().then(q => {this.setState({tags: q.docs.map(doc => doc.data() as TagType)})});
+  public componentWillMount() {
+    tagPromise.then(doc => {
+      const data = doc.data();
+      const tags = data && data.ids;
+      this.setState({tags})});
+  }
+
 
 
     
@@ -46,13 +45,13 @@ export default class TagSelector extends Component<Props, State> {
     this.props.onSelect(value)
   }
   public escape = () => {
-    this.setState({userInput:"",showSuggestions: false})
+    this.setState({showSuggestions: false})
     this.props.onEscape()
   }
   public onChange = (e: any) => { 
     // @ts-ignore
     const userInput = e.currentTarget.value;
-    const filteredSuggestions = filterSuggestions(this, userInput)
+    const filteredSuggestions = filterSuggestions(this.state.tags, userInput)
     this.setState({filteredSuggestions, userInput})
   }
   public onClick = (e: any) => { 
@@ -87,17 +86,21 @@ export default class TagSelector extends Component<Props, State> {
         const userInput = filteredSuggestions[activeSuggestion] || input
         this.select(userInput);
         break;
-      default:
-        this.setState({showSuggestions})
 
     }
   }
-  public render({ }: Props, { }: State) {
+  public render({ value }: Props, { userInput, filteredSuggestions, activeSuggestion, showSuggestions }: State) {
+    if(userInput===undefined) {
+      this.setState({userInput: value || "", filteredSuggestions: filterSuggestions(this.state.tags, value)})
+      return ("loading...")
+    }
     const suggestionsListComponent = <ul class={style.list} >
-      {this.state.filteredSuggestions.map((suggestion, i) => (
-        <li onMouseDown={this.onClick}
+      {filteredSuggestions.map((suggestion, i) => (
+        <li key={i}
+            onMouseDown={this.onClick}
             onMouseOver={this.onMouseOver}
-            class={i===this.state.activeSuggestion ? style.activeSuggestion : undefined}>
+            class={i===activeSuggestion ? style.activeSuggestion : undefined}
+            >
           {suggestion}
         </li>
       ))}
@@ -110,7 +113,7 @@ export default class TagSelector extends Component<Props, State> {
       >
         <input
           type="text"
-          name={this.state.userInput}
+          name={userInput}
           tabIndex={0}
           onBlur={this.escape}
           onFocus={e=>this.setState({showSuggestions: true})}
@@ -118,9 +121,9 @@ export default class TagSelector extends Component<Props, State> {
           onKeyUp={this.onChange}
           onKeyDown={this.onKeyDown}
           ref={i=>this.input=i}
-          value={this.state.userInput}
+          value={userInput}
         />
-        {this.state.showSuggestions && suggestionsListComponent}
+        {showSuggestions && suggestionsListComponent}
       </div>
     );
   }

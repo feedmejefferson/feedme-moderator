@@ -10,27 +10,31 @@ interface Props {
     tag?: string;
 }
 interface State {
-    tags: TagType[];
+    tags: string[];
 }
+
+const tagPromise = firestore.collection("indexes").doc("tagIds").get();
+
 
 export default class TagListRoute extends Component<Props, State> {
     public state = {
         tags: []
     }
-    public tagstore = firestore.collection("tags");
 
-    public query = this.tagstore
-    // .where("containsTags", "array-contains", filter) : this.foodstore 
-    // query  // .orderBy("id").limit(5)
-         .get().then(q => {this.setState({tags: q.docs.map(doc => doc.data() as TagType)})});
+    public componentWillMount() {
+        tagPromise.then(doc => {
+            const data = doc.data();
+            const tags = data && data.ids;
+            this.setState({tags})});      
+    }
 
-    public render({tag}: Props) {
+    public render({}: Props, {tags}: State) {
         return (
             <div class={style.page}>
                 <h1>Tags</h1>
                 <ul>
-                {this.state.tags.map((x: any) => <li key={x.id}>
-                <Link activeClassName="" href={`/tags/${x.id}`}>{x.pretty}</Link>
+                {tags.map(tag => <li key={tag}>
+                <Link activeClassName="" href={`/tags/${tag}`}>{tag}</Link>
                 </li>)}
                 </ul>
             </div>

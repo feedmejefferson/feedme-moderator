@@ -17,7 +17,7 @@ interface FoodModel {
 interface Props extends FoodType {}
 interface State extends FoodType {}
 
-export default class Food extends Component<Props, State> {
+export default class FoodForm extends Component<Props, State> {
   public state = { ...this.props }
 
   public handleChange = (e: Event) => { 

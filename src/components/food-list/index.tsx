@@ -1,22 +1,22 @@
 import { Component, h } from 'preact';
 import { FoodType } from "../../types";
-import Food from "../food";
-// import * as style from "./style.css";
+import FoodLink from '../food-link';
+import * as style from "./style.css";
 
 interface Props {
     foods: FoodType[];
 }
-interface State {
-  filter: string;
-}
 
 export default class FoodList extends Component<Props> {
-  public render({ foods }: Props, { filter }: State) {
+  public render({ foods }: Props) {
     return (
       <div>
 
-        <ul>
-    {foods.map((food, i) => <Food key={food.id} {...food} />)}
+        <ul class={style.masonry}>
+    {foods.map(food => 
+      <li key={food.id} class={style.masonryBrick}>
+      <FoodLink {...food} />
+      </li>)}
         </ul>
 
       </div>
