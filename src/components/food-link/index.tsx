@@ -1,11 +1,10 @@
 import { Component, h } from 'preact';
 import { Link } from 'preact-router/match';
-import { FoodType } from "../../types";
-import { firestore } from '../firebase'
-import TagList from '../tag-list';
-import * as style from "./style.css";
 
-interface Props extends FoodType {}
+interface Props {
+  id: string;
+  title: string;
+}
 
 export default class FoodLink extends Component<Props> {
 

@@ -18,7 +18,7 @@ export interface VectorType {
   dims: number[];
 }
 export interface FoodSpace extends VectorType, NeighborType {
-
+  id: string;
 }
 export interface TagType extends NeighborType, VectorType {
   id: string;
