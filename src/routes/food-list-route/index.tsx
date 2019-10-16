@@ -74,6 +74,7 @@ export default class FoodListRoute extends Component<Props, State> {
         return (
             
             <div class={style.profile}>
+                <h1>Filter by Tags</h1>
                 <TagSelector value={f} onSelect={this.handleFilter} onEscape={()=>{}} />
 
                 {foods && <FoodList foods={foods}/>}
