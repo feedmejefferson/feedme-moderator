@@ -19,7 +19,7 @@ interface FoodModel {
 interface Props extends FoodType {}
 interface State extends FoodType {}
 
-const TagLinks = ({tags}:{tags: string[]}) => <span>{tags.map((tag,i)=>(
+const TagLinks = ({tags}:{tags: string[]}) => <span>{tags && Array.isArray(tags) && tags.map((tag,i)=>(
   <span key={tag}>
     <Link activeClassName="" href={`/tags/${tag}`}>{tag}</Link>
     { i<tags.length-1 && ", "} 
