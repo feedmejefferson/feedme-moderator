@@ -11,7 +11,9 @@ export default class TagDetail extends Component<Props> {
     return (
       <div>
         <h1>{id}</h1>
+        <h2>Fingerprint</h2>
         <Fingerprint dims={dims} />
+        <h2>Similar Tags</h2>
         <ul>
         {neighbors && neighbors.map((n,i)=>
         <li key={i}>
@@ -19,6 +21,7 @@ export default class TagDetail extends Component<Props> {
         </li>
         )}
         </ul>
+        <h2><Link activeClassName="" href={`/food?filter=${id}`}>Foods tagged with {id}</Link></h2>
       </div>
     );
   }

@@ -24,4 +24,15 @@ export interface TagType extends NeighborType, VectorType {
   id: string;
   pretty: string;
 }
+export interface TagStat {
+  id: string;
+  containsTags: number;
+  isTags: number;
+  descriptiveTags: number;
+  totalTags?: number;
+}
+export interface TagStats {
+  [key: string]: TagStat
+}
+
 

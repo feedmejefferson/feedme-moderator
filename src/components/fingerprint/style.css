@@ -1,7 +1,23 @@
-.bar {
-  height: 1rem;
-  position: relative;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
-ul { 
-  list-style: none;
+table, td { 
+  font-weight: bold;
+}
+.bar {
+  height: 90%;
+  position: absolute;
+  top: 5%;
+}
+.bar-cell {
+  position: relative;
+  width: 60%;
+  border: solid 1px #ddd;
+}
+.left-col {
+  text-align: right;
+}
+.right-col {
+  text-align: left;
 }

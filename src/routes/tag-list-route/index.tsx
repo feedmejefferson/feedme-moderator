@@ -1,42 +1,55 @@
 import { Component, h } from "preact";
 import { Link } from "preact-router/match";
+import { dimensions } from "../../components/fingerprint";
 import { firestore } from "../../components/firebase"
-import TagList from "../../components/tag-list";
-import { TagType } from "../../types";
+import TagTable from "../../components/tag-table";
+import { TagStat, TagStats } from "../../types";
 import * as style from "./style.css";
 
-const updateTags = (newTags: string[]) => {};
 interface Props {
-    tag?: string;
 }
 interface State {
-    tags: string[];
+    tags: TagStats;
+    stats: TagStat[];
+    sortKey: { key: string, index?: number, order: number }
 }
 
-const tagPromise = firestore.collection("indexes").doc("tagIds").get();
+const tagPromise = firestore.collection("indexes").doc("tagStats").get();
 
 
 export default class TagListRoute extends Component<Props, State> {
-    public state = {
-        tags: []
+    public onSort = (key: string, index?: number) => {
+        const s = this.state.sortKey;
+        const order = !s ? 1 : !(key===s.key && index===s.index) ? 1 : -1 * s.order;
+        const sortKey = { key, index, order }
+        const compare = (a: any, b: any) => {
+            const A = index ? a[key][index] : a[key]
+            const B = index ? b[key][index] : b[key]
+            return order * (A < B ? 1 : A > B ? -1 : 0); 
+        }
+        const stats = [...this.state.stats]
+        stats.sort(compare)
+        this.setState({stats, sortKey})
     }
 
     public componentWillMount() {
         tagPromise.then(doc => {
-            const data = doc.data();
-            const tags = data && data.ids;
-            this.setState({tags})});      
+            const tags = doc.data() as TagStats;
+            const stats = Object.values(tags).map(stat => ({...stat, totalTags: stat.containsTags+stat.descriptiveTags+stat.isTags }))
+            this.setState({tags, stats})});      
     }
 
-    public render({}: Props, {tags}: State) {
+    public render({}: Props, {stats}: State) {
+        if(!stats) { return ("loading...")}
         return (
             <div class={style.page}>
                 <h1>Tags</h1>
-                <ul>
-                {tags.map(tag => <li key={tag}>
-                <Link activeClassName="" href={`/tags/${tag}`}>{tag}</Link>
-                </li>)}
-                </ul>
+                <p>
+                Click any of the table column headers to sort the table by that
+                column, or click one of the following meaning dimensions: 
+                { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i)}>{dim.left} / {dim.right}</button>)}
+                </p>
+                <TagTable stats={stats} sort={this.onSort}/>
             </div>
         );
     }
