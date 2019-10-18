@@ -21,7 +21,7 @@ const tagPromise = firestore.collection("indexes").doc("tagStats").get();
 
 export default class TagListRoute extends Component<Props, State> {
     public onSort = (sort: string, index?: number) => {
-        const order = !(sort===this.props.sort && this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
+        const order = !(sort===this.props.sort && !index || this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
         const sortRoute = "/tags?sort=" + sort + ( index!==undefined ? "&index=" + index : "" ) + "&order=" + order; 
         route(sortRoute, true);
     }
