@@ -19,6 +19,7 @@ interface State {
 }
 const pageSize = 20;
 const foodstore = firestore.collection("foods");
+const OPTS = { passive:true };
 
 export default class FoodListRoute extends Component<Props, State> {
     public state: State = {
@@ -36,9 +37,7 @@ export default class FoodListRoute extends Component<Props, State> {
             this.setState({appliedFilter, queryFilter, lastRef, foods});
         });
     }
-
-    public onMore = (e: any) => {
-        e.preventDefault();
+    public loadMore = () => {
         this.state.queryFilter.startAfter(this.state.lastRef).limit(pageSize)
         .get().then((snapshots: any) => {
             const docs = snapshots.docs;
@@ -46,23 +45,27 @@ export default class FoodListRoute extends Component<Props, State> {
             const foods = [...this.state.foods, ...docs.map((doc: any)=>doc.data())];
             this.setState({lastRef, foods});
         });
-
     }
-    // gets called when this route is navigated to
-    // public componentDidMount() {
-    //     if(this.state.filter !== this.props.filter){
-    //         this.filterFoods(this.props.filter);
-    //     }
-    // }
+    public onMore = (e: any) => {
+        e.preventDefault();
+        this.loadMore();
+    }
+    public onScroll = (e: any) => {
+        const el = document.scrollingElement;
+        const viewHeight = el && el.clientHeight;
+        const top = el && el.scrollTop;
+        const height = el && el.scrollHeight;
+        if(!(this.state.foods.length % pageSize) && height && top && viewHeight && height===top+viewHeight) {
+            this.loadMore();
+        }
+    }
+    public componentDidMount() {
+        addEventListener('scroll', this.onScroll, OPTS);
+    }
+    public componentWillUnmount() {
+        removeEventListener('scroll', this.onScroll);
+    }
 
-    // public handleChange = (e: Event) => {
-    //     // @ts-ignore
-    //     this.setState({filter: e.target.value})
-    // }
-    // public handleSubmit = (e: Event) => {
-    //     e.preventDefault();
-    //     this.filterFoods(this.state.filter);
-    // }
     public handleFilter = (tag: string) => {
         route("/food?filter="+tag);
     }
