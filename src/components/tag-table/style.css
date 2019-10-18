@@ -1,5 +1,6 @@
 table {
   border-collapse: collapse;
+  width: unset;
 }
 table, th, td {
   border: 1px solid #ddd;

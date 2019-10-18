@@ -8,6 +8,7 @@ import * as style from "./style.css";
 
 interface Props {
     filter: string;
+    tagtype?: string;
 }
 
 interface State {
@@ -25,9 +26,9 @@ export default class FoodListRoute extends Component<Props, State> {
     };
 
 
-    public filterFoods = (filter: string) => {
+    public filterFoods = (filter: string, tagtype: string) => {
         const appliedFilter = filter || "";
-        const queryFilter = (appliedFilter === "") ? foodstore : foodstore.where("allTags", "array-contains", filter);
+        const queryFilter = (appliedFilter === "") ? foodstore : foodstore.where(tagtype, "array-contains", filter);
         queryFilter.limit(pageSize).get().then((snapshots: any) => {
             const docs = snapshots.docs;
             const lastRef = docs[pageSize-1];
@@ -66,10 +67,10 @@ export default class FoodListRoute extends Component<Props, State> {
         route("/food?filter="+tag);
     }
   
-    public render({ filter }: Props, { foods, appliedFilter }: State) {
+    public render({ filter, tagtype }: Props, { foods, appliedFilter }: State) {
         const f = filter || "";
         if(appliedFilter!==f) {
-            this.filterFoods(f)
+            this.filterFoods(f, tagtype || "allTags")
         }
         return (
             

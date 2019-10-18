@@ -19,16 +19,14 @@ export default class TagTable extends Component<Props> {
           <th onClick={()=>sort("containsTags")}>Contained Count</th>
           <th onClick={()=>sort("descriptiveTags")}>Addtional Count</th>
           <th onClick={()=>sort("totalTags")}>Total Count</th>
-          <th>Tag Detail Page</th>
         </tr>
         {stats.map((stat,i)=>
         <tr key={i}>
-          <td><Link activeClassName='' href={`/food?filter=${stat.id}`}>{stat.id}</Link></td>
-          <td class={style.numeric}>{stat.isTags}</td>
-          <td class={style.numeric}>{stat.containsTags}</td>
-          <td class={style.numeric}>{stat.descriptiveTags}</td>
-          <td class={style.numeric}>{stat.totalTags}</td>
-          <td><Link activeClassName='' href={`/tags/${stat.id}`}>{stat.id} details</Link></td>
+          <td><Link activeClassName='' href={`/tags/${stat.id}`}>{stat.id}</Link></td>
+          <td class={style.numeric}><Link activeClassName='' href={`/food?filter=${stat.id}&tagtype=isTags`}>{stat.isTags}</Link></td>
+          <td class={style.numeric}><Link activeClassName='' href={`/food?filter=${stat.id}&tagtype=containsTags`}>{stat.containsTags}</Link></td>
+          <td class={style.numeric}><Link activeClassName='' href={`/food?filter=${stat.id}&tagtype=descriptiveTags`}>{stat.descriptiveTags}</Link></td>
+          <td class={style.numeric}><Link activeClassName='' href={`/food?filter=${stat.id}`}>{stat.totalTags}</Link></td>
         </tr>
 
         )}
