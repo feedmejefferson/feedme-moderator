@@ -1,5 +1,5 @@
 import { Component, h } from "preact";
-import { Link } from "preact-router/match";
+import { route } from "preact-router";
 import { dimensions } from "../../components/fingerprint";
 import { firestore } from "../../components/firebase"
 import TagTable from "../../components/tag-table";
@@ -7,29 +7,23 @@ import { TagStat, TagStats } from "../../types";
 import * as style from "./style.css";
 
 interface Props {
+    sort?: string;
+    order?: string;
+    index?: number;
 }
 interface State {
     tags: TagStats;
     stats: TagStat[];
-    sortKey: { key: string, index?: number, order: number }
 }
 
 const tagPromise = firestore.collection("indexes").doc("tagStats").get();
 
 
 export default class TagListRoute extends Component<Props, State> {
-    public onSort = (key: string, index?: number) => {
-        const s = this.state.sortKey;
-        const order = !s ? 1 : !(key===s.key && index===s.index) ? 1 : -1 * s.order;
-        const sortKey = { key, index, order }
-        const compare = (a: any, b: any) => {
-            const A = index ? a[key][index] : a[key]
-            const B = index ? b[key][index] : b[key]
-            return order * (A < B ? 1 : A > B ? -1 : 0); 
-        }
-        const stats = [...this.state.stats]
-        stats.sort(compare)
-        this.setState({stats, sortKey})
+    public onSort = (sort: string, index?: number) => {
+        const order = !(sort===this.props.sort && this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
+        const sortRoute = "/tags?sort=" + sort + ( index!==undefined ? "&index=" + index : "" ) + "&order=" + order; 
+        route(sortRoute, true);
     }
 
     public componentWillMount() {
@@ -39,8 +33,21 @@ export default class TagListRoute extends Component<Props, State> {
             this.setState({tags, stats})});      
     }
 
-    public render({}: Props, {stats}: State) {
+    public render({sort, index, order}: Props, {stats}: State) {
         if(!stats) { return ("loading...")}
+         
+        let sortedStats = stats;
+        if(sort) {
+            const compare = (a: any, b: any) => {
+                const o = order === 'd' ? 1 : -1;
+                const s = sort || "id"
+                const A = index ? a[s][index] : a[s]
+                const B = index ? b[s][index] : b[s]
+                return o * (A < B ? 1 : A > B ? -1 : 0); 
+            }
+            sortedStats = [...stats].sort(compare)    
+        }
+
         return (
             <div class={style.page}>
                 <h1>Tags</h1>
@@ -49,7 +56,7 @@ export default class TagListRoute extends Component<Props, State> {
                 column, or click one of the following meaning dimensions: 
                 { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i)}>{dim.left} / {dim.right}</button>)}
                 </p>
-                <TagTable stats={stats} sort={this.onSort}/>
+                <TagTable stats={sortedStats} sort={this.onSort}/>
             </div>
         );
     }
