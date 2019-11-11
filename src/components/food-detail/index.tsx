@@ -6,18 +6,7 @@ import FoodLink from '../food-link';
 import TagList from '../tag-list';
 import * as style from "./style.css";
 
-interface FoodModel {
-  title: string,
-  originTitle: string,
-  id: string, 
-  author: string,
-  isTags: string[],
-  containsTags: string[], 
-  descriptiveTags: string[]
-}
-
 interface Props extends FoodType {}
-interface State extends FoodType {}
 
 const TagLinks = ({tags}:{tags: string[]}) => <span>{tags && Array.isArray(tags) && tags.map((tag,i)=>(
   <span key={tag}>
@@ -26,26 +15,26 @@ const TagLinks = ({tags}:{tags: string[]}) => <span>{tags && Array.isArray(tags)
   </span>
 ))}</span>
 
-export default class FoodDetail extends Component<Props, State> {
+export default class FoodDetail extends Component<Props> {
 
-    public render({ id, author, authorProfileUrl, title, originTitle, originUrl, license, licenseUrl, isTags, containsTags, descriptiveTags }: Props, {  }: State) {
+    public render(props: Props) {
         return (
           <div class={style.food}>
-            <h1>{title}</h1>
+            <h1>{props.title}</h1>
             <p>
-              <strong>Main Tags:</strong> <TagLinks tags={isTags} /> 
+              <strong>Main Tags:</strong> <TagLinks tags={props.isTags} /> 
               {" "}
-              <strong>Contains Tags:</strong> <TagLinks tags={containsTags} /> 
+              <strong>Contains Tags:</strong> <TagLinks tags={props.containsTags} /> 
               {" "}
-              <strong>Additional Tags:</strong> <TagLinks tags={descriptiveTags} />
+              <strong>Additional Tags:</strong> <TagLinks tags={props.descriptiveTags} />
             </p>
-            <FoodLink id={id} title={title} />
+            <FoodLink id={props.id} title={props.title} />
             <p>
-              Originally Titled: <a href={originUrl} target="_blank" rel="noopener noreferrer">{originTitle}</a>
-              { author && " by " }
-              { author && <a href={authorProfileUrl} target="_blank" rel="noopener noreferrer">{author}</a> }
-              { license && " licensed under " }
-              { license && <a href={licenseUrl} target="_blank" rel="noopener noreferrer">{license}</a> }
+              Originally Titled: <a href={props.originUrl} target="_blank" rel="noopener noreferrer">{props.originTitle}</a>
+              { props.author && " by " }
+              { props.author && <a href={props.authorProfileUrl} target="_blank" rel="noopener noreferrer">{props.author}</a> }
+              { props.license && " licensed under " }
+              { props.license && <a href={props.licenseUrl} target="_blank" rel="noopener noreferrer">{props.license}</a> }
               .
             </p>
           </div>

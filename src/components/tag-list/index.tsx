@@ -8,14 +8,10 @@ interface Props {
   updateTags: (tags: string[]) => void;
 }
 interface State {
-  tags: string[];
   active?: number;
 }
 
 export default class TagList extends Component<Props, State> {
-  public state: State = { 
-    tags: !this.props.tags ? [] : this.props.tags,
-  }
   public onToggle = (offset: number) => {
     if(this.state.active===offset) {
       this.setState({active: undefined})
@@ -24,29 +20,28 @@ export default class TagList extends Component<Props, State> {
     }
   }
   public onUpdate = (tag: string, key: number) => {
-    const tags = [...this.state.tags]
+    const tags = [...this.props.tags]
     tags[key]=tag;
-    this.setState({tags, active: undefined});
+    this.setState({active: undefined});
     this.props.updateTags(tags);
   }
   public onDelete = (key: number) => {
-    const tags = [...this.state.tags]
+    const tags = [...this.props.tags]
     tags.splice(key,1)
-    this.setState({tags, active: undefined});
+    this.setState({active: undefined});
     this.props.updateTags(tags);
   }
   public onAdd = (tag: string) => {
-    const tags = [...this.state.tags]
+    const tags = [...this.props.tags]
     tags.push(tag)
-    this.setState({tags, active: undefined});
+    this.setState({active: undefined});
     this.props.updateTags(tags);
   }
 
-  public render({ }: Props, { tags, active }: State) {
+  public render({ tags }: Props, { active }: State) {
     const length = tags.length;
     return (
       <ul class={style.tagList} >
-        {console.log(tags)}
         {tags && Array.isArray(tags) && tags.map((tag, i)=>(
           <li key={i} class={style.tagListItem}>
             <Tag tag={tag} offset={i}

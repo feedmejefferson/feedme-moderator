@@ -13,17 +13,18 @@ interface Props {
 interface State {
     food?: FoodType;
     foodspace?: FoodSpace;
+    edit?: boolean;
 }
 
 const foodStore = firestore.collection("foods");
 const vectorStore = firestore.collection("foodspace");
 
 export default class FoodRoute extends Component<Props, State> {
-    public render({foodId}: Props, { food, foodspace }: State) {
+    public render({foodId}: Props, { food, foodspace, edit }: State) {
         // update the state if we need to render for a new tag id
         if(!food || food.id !==foodId) {
-            foodStore.doc(foodId).get().then(doc => {
-                this.setState({food: doc.data() as FoodType})
+            foodStore.doc(foodId).onSnapshot(doc => {
+                this.setState({edit: false, food: doc.data() as FoodType})
             })    
         }
         if(!foodspace || foodspace.id !==foodId) {
@@ -33,10 +34,11 @@ export default class FoodRoute extends Component<Props, State> {
         }
         return (
             <div class={style.tag}>
-                { !food && "loading..." }
-                { food && <FoodDetail {...food} /> }
+                { food ? <button onClick={() => this.setState({edit: true})}>Edit</button> : "loading..." }
+                { food && (edit ? <FoodForm {...food} key={food.id} onSubmit={() => this.setState({edit: false})}/> : <FoodDetail {...food} /> ) }
                 { foodspace && <FoodVector {...foodspace}/>}
             </div>
         );
     }
 }
+
