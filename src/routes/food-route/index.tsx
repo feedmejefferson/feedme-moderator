@@ -1,5 +1,5 @@
 import { Component, h } from "preact";
-import { firestore } from "../../components/firebase"
+import { auth, firestore } from "../../components/firebase"
 import Food from "../../components/food-detail";
 import FoodDetail from "../../components/food-detail";
 import FoodForm from "../../components/food-form";
@@ -14,13 +14,26 @@ interface State {
     food?: FoodType;
     foodspace?: FoodSpace;
     edit?: boolean;
+    user?: any;
 }
 
 const foodStore = firestore.collection("foods");
 const vectorStore = firestore.collection("foodspace");
 
 export default class FoodRoute extends Component<Props, State> {
-    public render({foodId}: Props, { food, foodspace, edit }: State) {
+    public unsubscribeAuth = () => { };
+
+    // gets called when this route is navigated to
+    public componentDidMount() {
+        this.unsubscribeAuth = auth.onAuthStateChanged(user => {this.setState({user})});
+    }
+
+    // gets called just before navigating away from the route
+    public componentWillUnmount() {
+        this.unsubscribeAuth();
+    }
+
+    public render({foodId}: Props, { food, foodspace, edit, user }: State) {
         // update the state if we need to render for a new tag id
         if(!food || food.id !==foodId) {
             foodStore.doc(foodId).onSnapshot(doc => {
@@ -32,9 +45,16 @@ export default class FoodRoute extends Component<Props, State> {
                 this.setState({foodspace: doc.data() as FoodSpace})
             })    
         }
+        const Edit = () => {
+            if(edit || !user) {
+                console.log("um, we're in edit mode, so the button should be disabled")
+                return null;
+            }
+            return <button onClick={() => this.setState({edit: true})}>Edit</button>
+        }
         return (
             <div class={style.tag}>
-                { food ? <button onClick={() => this.setState({edit: true})}>Edit</button> : "loading..." }
+                { !food ? "loading..." : <Edit/> }
                 { food && (edit ? <FoodForm {...food} key={food.id} onSubmit={() => this.setState({edit: false})}/> : <FoodDetail {...food} /> ) }
                 { foodspace && <FoodVector {...foodspace}/>}
             </div>
