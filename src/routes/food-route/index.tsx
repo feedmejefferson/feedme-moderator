@@ -22,6 +22,7 @@ const vectorStore = firestore.collection("foodspace");
 
 export default class FoodRoute extends Component<Props, State> {
     public unsubscribeAuth = () => { };
+    public unsubscribeFoodStore = () => { };
 
     // gets called when this route is navigated to
     public componentDidMount() {
@@ -31,12 +32,14 @@ export default class FoodRoute extends Component<Props, State> {
     // gets called just before navigating away from the route
     public componentWillUnmount() {
         this.unsubscribeAuth();
+        this.unsubscribeFoodStore();
     }
 
     public render({foodId}: Props, { food, foodspace, edit, user }: State) {
         // update the state if we need to render for a new tag id
         if(!food || food.id !==foodId) {
-            foodStore.doc(foodId).onSnapshot(doc => {
+            this.unsubscribeFoodStore();
+            this.unsubscribeFoodStore = foodStore.doc(foodId).onSnapshot(doc => {
                 this.setState({edit: false, food: doc.data() as FoodType})
             })    
         }
