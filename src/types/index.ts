@@ -10,6 +10,7 @@ export interface FoodType {
   title: string;
   license: string;
   licenseUrl: string;
+  updated?: any;
 }
 export interface NeighborType {
   neighbors: string[];

@@ -50,7 +50,6 @@ export default class FoodRoute extends Component<Props, State> {
         }
         const Edit = () => {
             if(edit || !user) {
-                console.log("um, we're in edit mode, so the button should be disabled")
                 return null;
             }
             return <button onClick={() => this.setState({edit: true})}>Edit</button>
