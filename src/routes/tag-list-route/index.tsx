@@ -54,7 +54,7 @@ export default class TagListRoute extends Component<Props, State> {
                 <p>
                 Click any of the table column headers to sort the table by that
                 column, or click one of the following meaning dimensions: 
-                { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i)}>{dim.left} / {dim.right}</button>)}
+                { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i+1)}>{dim.left} / {dim.right}</button>)}
                 </p>
                 <TagTable stats={sortedStats} sort={this.onSort}/>
             </div>
