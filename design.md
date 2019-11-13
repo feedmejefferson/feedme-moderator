@@ -55,3 +55,9 @@ So... The tag vectors are immutable, but the tag-food inverted index would not b
 Should we combine the `foods` and `foodspace` collections? Is there any reason to maintain a foodspace collection at all? We could calculate it on demand... or we could maintain it a single "stats" index document. 
 
 Should we maintain separate indexes for tag vectors and inverted tag-food lists?
+
+#### Notes
+
+It turns out I didn't have to do much to gather up all of the foodspace collection documents into a single file -- the output from R was already a single file that I had used some node.js magic to split into individual files. I'd already revamped a new CLI to convert the single json file from an array to an associative array rather than splitting it into individual files and I was using that to build the tagStats. Converting the foodspace into a similar type of file just meant using that new `associate` CLI command instead of the `split` command. 
+
+As for the inverted index, I had to add a little bit of code to R, but not much. Then I had to run that through the same `assocate` command.

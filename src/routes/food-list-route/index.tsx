@@ -1,50 +1,58 @@
 import { Component, h } from "preact";
 import { route } from 'preact-router';
+import { dimensions } from "../../components/fingerprint";
 import { firestore } from "../../components/firebase"
+import FoodLink from "../../components/food-link";
 import FoodList from "../../components/food-list"
 import TagSelector from "../../components/tag-selector";
 import { FoodType } from '../../types';
 import * as style from "./style.css";
 
+
 interface Props {
-    filter: string;
-    tagtype?: string;
+    filter?: string;
+    sort?: string;
+    order?: string;
+    index?: number;
 }
 
 interface State {
-    appliedFilter?: string;
-    foods: FoodType[];
-    lastRef?: any;
-    queryFilter?: any;
+    foods: any;
+    stats: any[];
+    visibleCount: number;
+    invertedIndex: any;
 }
+const foodPromise = firestore.collection("indexes").doc("foodspace").get();
+const tagFilter = firestore.collection("indexes").doc("tagFoods").get();
+
 const pageSize = 20;
-const foodstore = firestore.collection("foods");
 const OPTS = { passive:true };
 
 export default class FoodListRoute extends Component<Props, State> {
-    public state: State = {
-        foods: [],
-    };
-
-
-    public filterFoods = (filter: string, tagtype: string) => {
-        const appliedFilter = filter || "";
-        const queryFilter = (appliedFilter === "") ? foodstore : foodstore.where(tagtype, "array-contains", filter);
-        queryFilter.limit(pageSize).get().then((snapshots: any) => {
-            const docs = snapshots.docs;
-            const lastRef = docs[pageSize-1];
-            const foods = [...docs.map((doc: any)=>doc.data())];
-            this.setState({appliedFilter, queryFilter, lastRef, foods});
-        });
+    public onSort = (sort: string, index?: number) => {
+        const order = !(sort===this.props.sort && !index || this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
+        const sortRoute = "/food?sort=" + sort + 
+        ( index!==undefined ? "&index=" + index : "" ) + 
+        ( this.props.filter!==undefined ? "&filter=" + this.props.filter : "" ) + 
+        "&order=" + order; 
+        route(sortRoute, true);
     }
+    public componentWillMount() {
+        foodPromise.then(doc => {
+            const foods = doc.data() || {};
+            const stats = Object.values(foods)
+            this.setState({foods, stats, visibleCount: pageSize})});      
+        tagFilter.then(doc => {
+            const invertedIndex = doc.data() || {};
+            this.setState({invertedIndex})});      
+        }
+
+
     public loadMore = () => {
-        this.state.queryFilter.startAfter(this.state.lastRef).limit(pageSize)
-        .get().then((snapshots: any) => {
-            const docs = snapshots.docs;
-            const lastRef = docs[pageSize-1];
-            const foods = [...this.state.foods, ...docs.map((doc: any)=>doc.data())];
-            this.setState({lastRef, foods});
-        });
+        const visibleCount = this.state.visibleCount;
+        if(visibleCount < this.state.stats.length){
+            this.setState({visibleCount: visibleCount + pageSize})
+        }
     }
     public onMore = (e: any) => {
         e.preventDefault();
@@ -67,22 +75,49 @@ export default class FoodListRoute extends Component<Props, State> {
     }
 
     public handleFilter = (tag: string) => {
-        route("/food?filter="+tag);
+        const filterRoute = "/food?filter=" + tag +
+        ( this.props.index!==undefined ? "&index=" + this.props.index : "" ) + 
+        ( this.props.sort!==undefined ? "&sort=" + this.props.sort : "" ) + 
+        ( this.props.order!==undefined ? "&order=" + this.props.order : "" );
+        route(filterRoute, true);
     }
   
-    public render({ filter, tagtype }: Props, { foods, appliedFilter }: State) {
-        const f = filter || "";
-        if(appliedFilter!==f) {
-            this.filterFoods(f, tagtype || "allTags")
+    public render({ sort, order, index, filter }: Props, { stats, visibleCount, invertedIndex }: State) {
+        if(!stats) { return ("loading...")}
+
+        let sortedStats = stats;
+        if(sort) {
+            const compare = (a: any, b: any) => {
+                const o = order === 'd' ? 1 : -1;
+                const s = sort || "id"
+                const A = index ? a[s][index] : a[s]
+                const B = index ? b[s][index] : b[s]
+                return o * (A < B ? 1 : A > B ? -1 : 0); 
+            }
+            sortedStats = [...stats].sort(compare)    
         }
+        const showFoods = invertedIndex && filter && invertedIndex[filter];
+        const f = showFoods ? (stat: any) => showFoods.foods.includes(stat.id): (stat: any) => true;
+
         return (
             
             <div class={style.profile}>
                 <h1>Filter by Tags</h1>
-                <TagSelector value={f} onSelect={this.handleFilter} onEscape={()=>{}} />
+                <p>
+                Click any of the table column headers to sort the table by that
+                column, or click one of the following meaning dimensions: 
+                { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i+1)}>{dim.left} / {dim.right}</button>)}
+                </p>
 
-                {foods && <FoodList foods={foods}/>}
-                {!(foods.length % pageSize) && <button onClick={this.onMore}>More</button> }
+                <TagSelector value={filter ? filter : ""} onSelect={this.handleFilter} onEscape={()=>{}} />
+                <ul class={style.masonry}>
+                    {sortedStats.filter(f).slice(0,visibleCount).map(stat => 
+                    <li key={stat.id} class={style.masonryBrick}>
+                    <FoodLink title="" id={stat.id} />
+                    </li>)}
+                </ul>
+
+                <button onClick={this.onMore}>More</button> 
 
             </div>
         );
