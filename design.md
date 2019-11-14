@@ -44,7 +44,7 @@ If we keep them simple though, firestore has some operations that may make updat
 
 #### Immutability
 
-The location of a food in the food space changes based on the tags it's been tagged with. The location of the tags on the other hand is relatively immuntable (until we build a completely new projection matrix). 
+The location of a food in the food space changes based on the tags it's been tagged with. The location of the tags on the other hand is relatively immutable (until we build a completely new projection matrix). 
 
 I've put off realtime calculations so far, but in theory we could pretty easily calculate the location of a food in the food space by averaging all of the tags locations (there's a little more to it than that, but not much).
 
@@ -60,4 +60,44 @@ Should we maintain separate indexes for tag vectors and inverted tag-food lists?
 
 It turns out I didn't have to do much to gather up all of the foodspace collection documents into a single file -- the output from R was already a single file that I had used some node.js magic to split into individual files. I'd already revamped a new CLI to convert the single json file from an array to an associative array rather than splitting it into individual files and I was using that to build the tagStats. Converting the foodspace into a similar type of file just meant using that new `associate` CLI command instead of the `split` command. 
 
-As for the inverted index, I had to add a little bit of code to R, but not much. Then I had to run that through the same `assocate` command.
+As for the inverted index, I had to add a little bit of code to R, but not much. Then I had to run that through the same `associate` command.
+
+## New Data Flow
+
+```
+Legacy Data --> 
+R code --> 
+    foods.json
+    foodspace.json
+    tags.json
+    tagFoods.json
+ladle (associate|split) -->
+    foods/...
+    indexes/foodspace
+    indexes/tagStats
+    indexes/tagFoods
+ladle import (foods|indexes) -->
+    firestore/foods
+    firestore/indexes
+ladle export foods (?since last export?)
+    foods/...
+    realtimeIndexes/ (?? for reconciling ??)
+R code (using new data food metadata instead of legacy) -->
+    foods.json
+    ...
+```
+
+### Change Tracking / Reconciliation
+
+We should throw all of the exported data into a git repo and commit each time we do a new export. This will let us roll back to previous states by importing from an old commit. 
+
+> It would be nice if we could store the json in a `canonical` and `pretty` format. If the order was consistent, and each attribute appeared on it's own line, this would make diffing trivial because the only thing that would change would be additions, deletions and updated values. 
+> 
+> Should we go so far as to sort the tags in our lists?
+
+
+### Rebuilding Indexes and Stats
+
+It would be nice if real time updates can update the indexes as much as possible, however there are some stats that we just won't be able to update completely online and those will have to rely on offline batch processes. I have a feeling that our indexes might slowly get out of sync even if we do make our best effort to update them in real time.
+
+> It might be nice to have a process that reconciles the realtime updated indexes with the batch process generated ones just to see how quickly which values get out of sync.

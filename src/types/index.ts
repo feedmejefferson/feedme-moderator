@@ -5,6 +5,7 @@ export interface FoodType {
   isTags: string[];
   containsTags: string[];
   descriptiveTags: string[];
+  allTags?: string[];
   originTitle: string;
   originUrl: string;
   title: string;

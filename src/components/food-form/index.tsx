@@ -22,11 +22,40 @@ export default class FoodForm extends Component<Props, State> {
 
   public handleSubmit = (e: Event) => { 
     e.preventDefault();
-    firestore.collection("foods").doc(this.props.id).update({...this.state, updated: firebase.firestore.FieldValue.serverTimestamp() });
+    let allTags = this.props.allTags ? [...this.props.allTags] : [];
+    let additions: string[] = [];
+    let subtractions: string[] = [];
+    if(this.state.isTags || this.state.containsTags || this.state.descriptiveTags) {
+      const isTags = this.state.isTags || this.props.isTags;
+      console.log("is", isTags)
+      const containsTags = this.state.containsTags || this.props.containsTags;
+      console.log("contains", containsTags)
+      const descriptiveTags = this.state.descriptiveTags || this.props.descriptiveTags;
+      console.log("descriptive", descriptiveTags)
+      const allNewTags = Array.from(new Set([...isTags, ...containsTags, ...descriptiveTags]))
+      const allOldTags = [...allTags];
+      console.log("old", allOldTags)
+      console.log("new", allNewTags)
+      additions = [...allNewTags].filter(x => !allOldTags.includes(x))
+      subtractions = [...allOldTags].filter(x => !allNewTags.includes(x))
+      console.log("added tags", additions);
+      console.log("removed tags", subtractions);
+      allTags = allNewTags;
+    }
+    firestore.collection("foods").doc(this.props.id).update({...this.state, allTags, updated: firebase.firestore.FieldValue.serverTimestamp() });
     // update the last updated timestamp in the food index
     const foodspaceUpdates: any = {};
     foodspaceUpdates[`${this.props.id}.updated`] = firebase.firestore.FieldValue.serverTimestamp();
     firestore.collection("indexes").doc("foodspace").update(foodspaceUpdates);
+    // update the inverted index to add or remove this food from each of the tags
+    if(additions.length + subtractions.length > 0){
+      const tagFoodUpdates: any = {};
+      additions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayUnion(this.props.id))
+      subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayRemove(this.props.id))
+      console.log(tagFoodUpdates)
+      firestore.collection("indexes").doc("tagFoods").update(tagFoodUpdates);
+    }
+
     if(this.props.onSubmit) {
       this.props.onSubmit();
     }
