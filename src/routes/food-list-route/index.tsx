@@ -104,8 +104,8 @@ export default class FoodListRoute extends Component<Props, State> {
             <div class={style.profile}>
                 <h1>Filter by Tags</h1>
                 <p>
-                Click any of the table column headers to sort the table by that
-                column, or click one of the following meaning dimensions: 
+                Sort foods by <button onClick={()=>this.onSort("updated")}>Last Updated</button>
+                or one of the following meaning dimensions: 
                 { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i+1)}>{dim.left} / {dim.right}</button>)}
                 </p>
 

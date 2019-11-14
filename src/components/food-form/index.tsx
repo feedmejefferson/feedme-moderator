@@ -23,6 +23,10 @@ export default class FoodForm extends Component<Props, State> {
   public handleSubmit = (e: Event) => { 
     e.preventDefault();
     firestore.collection("foods").doc(this.props.id).update({...this.state, updated: firebase.firestore.FieldValue.serverTimestamp() });
+    // update the last updated timestamp in the food index
+    const foodspaceUpdates: any = {};
+    foodspaceUpdates[`${this.props.id}.updated`] = firebase.firestore.FieldValue.serverTimestamp();
+    firestore.collection("indexes").doc("foodspace").update(foodspaceUpdates);
     if(this.props.onSubmit) {
       this.props.onSubmit();
     }
@@ -39,7 +43,7 @@ export default class FoodForm extends Component<Props, State> {
               <p>Main Tags: <TagList tags={state.isTags || props.isTags} updateTags={(tags)=>this.setState({isTags: tags})}/></p>
               <p>Contains Tags: <TagList tags={state.containsTags || props.containsTags} updateTags={(tags)=>this.setState({containsTags: tags})}/></p>
               <p>Descriptive Tags: <TagList tags={state.descriptiveTags || props.descriptiveTags} updateTags={(tags)=>this.setState({descriptiveTags: tags})}/></p>
-              <p>last updated: {props.updated && props.updated.toMillis()}</p> 
+              <p>last updated: {props.updated && props.updated instanceof firebase.firestore.Timestamp && props.updated.toDate().toISOString()}</p> 
               <button onClick={this.handleSubmit}>Submit</button>
             </form>
           </div>

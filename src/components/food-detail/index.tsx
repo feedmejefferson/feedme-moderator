@@ -1,6 +1,7 @@
 import { Component, h } from 'preact';
 import { Link } from 'preact-router/match';
 import { FoodType } from "../../types";
+import firebase from '../firebase';
 import { firestore } from '../firebase'
 import FoodLink from '../food-link';
 import TagList from '../tag-list';
@@ -37,6 +38,7 @@ export default class FoodDetail extends Component<Props> {
               { props.license && <a href={props.licenseUrl} target="_blank" rel="noopener noreferrer">{props.license}</a> }
               .
             </p>
+            <p>last updated: {props.updated && props.updated instanceof firebase.firestore.Timestamp && props.updated.toDate().toISOString()}</p> 
           </div>
         );
     }
