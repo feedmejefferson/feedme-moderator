@@ -5,6 +5,7 @@ import { firestore } from "../../components/firebase"
 import FoodLink from "../../components/food-link";
 import FoodList from "../../components/food-list"
 import TagSelector from "../../components/tag-selector";
+import { foodStats, tagFoodsIndex } from "../../state/indices"
 import { FoodType } from '../../types';
 import * as style from "./style.css";
 
@@ -22,13 +23,14 @@ interface State {
     visibleCount: number;
     invertedIndex: any;
 }
-const foodPromise = firestore.collection("indexes").doc("foodspace").get();
-const tagFilter = firestore.collection("indexes").doc("tagFoods").get();
 
 const pageSize = 20;
 const OPTS = { passive:true };
 
 export default class FoodListRoute extends Component<Props, State> {
+    public unsubscribeTagFoods = () => {};
+    public unsubscribeFoodStats = () => {};
+
     public onSort = (sort: string, index?: number) => {
         const order = !(sort===this.props.sort && !index || this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
         const sortRoute = "/food?sort=" + sort + 
@@ -37,17 +39,6 @@ export default class FoodListRoute extends Component<Props, State> {
         "&order=" + order; 
         route(sortRoute, true);
     }
-    public componentWillMount() {
-        foodPromise.then(doc => {
-            const foods = doc.data() || {};
-            const stats = Object.values(foods)
-            this.setState({foods, stats, visibleCount: pageSize})});      
-        tagFilter.then(doc => {
-            const invertedIndex = doc.data() || {};
-            this.setState({invertedIndex})});      
-        }
-
-
     public loadMore = () => {
         const visibleCount = this.state.visibleCount;
         if(visibleCount < this.state.stats.length){
@@ -67,11 +58,27 @@ export default class FoodListRoute extends Component<Props, State> {
             this.loadMore();
         }
     }
+
     public componentDidMount() {
         addEventListener('scroll', this.onScroll, OPTS);
     }
+    public componentWillMount() {
+        this.unsubscribeFoodStats = foodStats.onSnapshot(doc => {
+            const foods = doc.data() || {};
+            const stats = Object.values(foods)
+            this.setState({foods, stats, visibleCount: pageSize})
+        });      
+        this.unsubscribeTagFoods = tagFoodsIndex.onSnapshot(doc => {
+            const invertedIndex = doc.data() || {};
+            this.setState({invertedIndex})
+        });      
+    }
+
+
     public componentWillUnmount() {
         removeEventListener('scroll', this.onScroll);
+        this.unsubscribeFoodStats();
+        this.unsubscribeTagFoods();
     }
 
     public handleFilter = (tag: string) => {
@@ -98,6 +105,7 @@ export default class FoodListRoute extends Component<Props, State> {
         }
         const showFoods = invertedIndex && filter && invertedIndex[filter];
         const f = showFoods ? (stat: any) => showFoods.foods.includes(stat.id): (stat: any) => true;
+        const filteredStats = sortedStats.filter(f);
 
         return (
             
@@ -111,13 +119,12 @@ export default class FoodListRoute extends Component<Props, State> {
 
                 <TagSelector value={filter ? filter : ""} onSelect={this.handleFilter} onEscape={()=>{}} />
                 <ul class={style.masonry}>
-                    {sortedStats.filter(f).slice(0,visibleCount).map(stat => 
+                    {filteredStats.slice(0,visibleCount).map(stat => 
                     <li key={stat.id} class={style.masonryBrick}>
                     <FoodLink title="" id={stat.id} />
                     </li>)}
                 </ul>
-
-                <button onClick={this.onMore}>More</button> 
+                { (visibleCount < filteredStats.length) && <button onClick={this.onMore}>More</button> }
 
             </div>
         );
