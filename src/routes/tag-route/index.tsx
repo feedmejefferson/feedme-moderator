@@ -27,8 +27,7 @@ export default class TagRoute extends Component<Props, State> {
         // Delete all remnants of the tag (within reason)
         const tag = this.props.tagId;
         const remove = FieldValue.arrayRemove(tag)
-        // TODO: remove reference to allTags once we've refactored it out of everything else
-        const foodUpdates = { isTags: remove, containsTags: remove, descriptiveTags: remove, allTags: remove }; 
+        const foodUpdates = { isTags: remove, containsTags: remove, descriptiveTags: remove }; 
         const invertedIndex = this.state.invertedIndex;
         const foodIds: string[] = invertedIndex && invertedIndex[tag] && invertedIndex[tag].foods;
         if(foodIds) {

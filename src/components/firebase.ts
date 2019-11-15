@@ -20,3 +20,4 @@ export const firestore = firebase.firestore();
 export const auth = firebase.auth();
 export const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
 export const FieldValue = firebase.firestore.FieldValue;
+export const Timestamp = firebase.firestore.Timestamp;

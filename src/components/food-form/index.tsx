@@ -1,8 +1,7 @@
 import { Component, h } from 'preact';
-import { foodStats, tagFoodsIndex } from "../../state/indices";
+import { foodCollection, foodStats, tagFoodsIndex, tagStats } from "../../state/indices";
 import { FoodType } from "../../types";
-import firebase from "../firebase";
-import { firestore } from '../firebase'
+import { FieldValue, Timestamp } from '../firebase'
 import FoodLink from '../food-link';
 import TagList from '../tag-list';
 import * as style from "./style.css";
@@ -23,38 +22,69 @@ export default class FoodForm extends Component<Props, State> {
 
   public handleSubmit = (e: Event) => { 
     e.preventDefault();
-    let allTags = this.props.allTags ? [...this.props.allTags] : [];
-    let additions: string[] = [];
-    let subtractions: string[] = [];
-    if(this.state.isTags || this.state.containsTags || this.state.descriptiveTags) {
-      const isTags = this.state.isTags || this.props.isTags;
-      console.log("is", isTags)
-      const containsTags = this.state.containsTags || this.props.containsTags;
-      console.log("contains", containsTags)
-      const descriptiveTags = this.state.descriptiveTags || this.props.descriptiveTags;
-      console.log("descriptive", descriptiveTags)
-      const allNewTags = Array.from(new Set([...isTags, ...containsTags, ...descriptiveTags]))
-      const allOldTags = [...allTags];
-      console.log("old", allOldTags)
-      console.log("new", allNewTags)
-      additions = [...allNewTags].filter(x => !allOldTags.includes(x))
-      subtractions = [...allOldTags].filter(x => !allNewTags.includes(x))
-      console.log("added tags", additions);
-      console.log("removed tags", subtractions);
-      allTags = allNewTags;
-    }
-    firestore.collection("foods").doc(this.props.id).update({...this.state, allTags, updated: firebase.firestore.FieldValue.serverTimestamp() });
+    // always update the food metadata itself do this first in case anything
+    // goes wrong while attempting to update the indexes
+    foodCollection.doc(this.props.id).update({...this.state, updated: FieldValue.serverTimestamp() });
+
     // update the last updated timestamp in the food index
     const foodStatUpdates: any = {};
-    foodStatUpdates[`${this.props.id}.updated`] = firebase.firestore.FieldValue.serverTimestamp();
+    foodStatUpdates[`${this.props.id}.updated`] = FieldValue.serverTimestamp();
     foodStats.update(foodStatUpdates);
-    // update the inverted index to add or remove this food from each of the tags
-    if(additions.length + subtractions.length > 0){
-      const tagFoodUpdates: any = {};
-      additions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayUnion(this.props.id))
-      subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayRemove(this.props.id))
-      console.log(tagFoodUpdates)
-      tagFoodsIndex.update(tagFoodUpdates);
+
+    if(this.state.isTags || this.state.containsTags || this.state.descriptiveTags) {
+
+      let additions: string[] = [];
+      let subtractions: string[] = [];
+      const tagStatUpdates: any = {};
+
+      // This all really needs to get refactored into a nice function
+      // way too much copy, paste, change here and there risk of typos
+      let isTags = this.props.isTags;
+      if(this.state.isTags) {
+        const newTags = this.state.isTags;
+        additions = [...newTags].filter(x => !isTags.includes(x))
+        subtractions = [...isTags].filter(x => !newTags.includes(x))
+        additions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = FieldValue.increment(1));
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = FieldValue.increment(-1));
+        isTags = newTags;
+      }
+
+      let containsTags = this.props.containsTags;
+      if(this.state.containsTags) {
+        const newTags = this.state.containsTags;
+        additions = [...newTags].filter(x => !containsTags.includes(x))
+        subtractions = [...containsTags].filter(x => !newTags.includes(x))
+        additions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = FieldValue.increment(1));
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = FieldValue.increment(-1));
+        containsTags = newTags;
+      }
+
+      let descriptiveTags = this.props.descriptiveTags;
+      if(this.state.descriptiveTags) {
+        const newTags = this.state.descriptiveTags;
+        additions = [...newTags].filter(x => !descriptiveTags.includes(x))
+        subtractions = [...descriptiveTags].filter(x => !newTags.includes(x))
+        additions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = FieldValue.increment(1));
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = FieldValue.increment(-1));
+        descriptiveTags = newTags;
+      }
+
+      tagStats.update(tagStatUpdates);
+
+      // Finally, update the inverted index based on any or no changes
+      // to the full set of all tags. Add or remove this food from each of the tags
+      const allNewTags = Array.from(new Set([...isTags, ...containsTags, ...descriptiveTags]));
+      const allOldTags = Array.from(new Set([...this.props.isTags, ...this.props.containsTags, ...this.props.descriptiveTags]));
+      additions = [...allNewTags].filter(x => !allOldTags.includes(x));
+      subtractions = [...allOldTags].filter(x => !allNewTags.includes(x))
+
+      if(additions.length + subtractions.length > 0){
+        const tagFoodUpdates: any = {};
+        additions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayUnion(this.props.id))
+        subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayRemove(this.props.id))
+        console.log(tagFoodUpdates)
+        tagFoodsIndex.update(tagFoodUpdates);
+      }
     }
 
     if(this.props.onSubmit) {
@@ -73,7 +103,7 @@ export default class FoodForm extends Component<Props, State> {
               <p>Main Tags: <TagList tags={state.isTags || props.isTags} updateTags={(tags)=>this.setState({isTags: tags})}/></p>
               <p>Contains Tags: <TagList tags={state.containsTags || props.containsTags} updateTags={(tags)=>this.setState({containsTags: tags})}/></p>
               <p>Descriptive Tags: <TagList tags={state.descriptiveTags || props.descriptiveTags} updateTags={(tags)=>this.setState({descriptiveTags: tags})}/></p>
-              <p>last updated: {props.updated && props.updated instanceof firebase.firestore.Timestamp && props.updated.toDate().toISOString()}</p> 
+              <p>last updated: {props.updated && props.updated instanceof Timestamp && props.updated.toDate().toISOString()}</p> 
               <button onClick={this.handleSubmit}>Submit</button>
             </form>
           </div>
