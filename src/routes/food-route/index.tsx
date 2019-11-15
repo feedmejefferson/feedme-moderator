@@ -40,7 +40,12 @@ export default class FoodRoute extends Component<Props, State> {
         if(!food || food.id !==foodId) {
             this.unsubscribeFoodStore();
             this.unsubscribeFoodStore = foodStore.doc(foodId).onSnapshot(doc => {
-                this.setState({edit: false, food: doc.data() as FoodType})
+                const f = doc.data() as FoodType;
+                // fix issues where empty arrays come through as objects
+                if(!Array.isArray(f.isTags)) { f.isTags = []; }
+                if(!Array.isArray(f.containsTags)) { f.containsTags = []; }
+                if(!Array.isArray(f.descriptiveTags)) { f.descriptiveTags = []; }
+                this.setState({edit: false, food: f})
             })    
         }
         if(!foodspace || foodspace.id !==foodId) {
