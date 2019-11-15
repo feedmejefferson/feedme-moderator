@@ -3,6 +3,7 @@ import { route } from "preact-router";
 import { dimensions } from "../../components/fingerprint";
 import { firestore } from "../../components/firebase"
 import TagTable from "../../components/tag-table";
+import { tagStats } from "../../state/indices";
 import { TagStat, TagStats } from "../../types";
 import * as style from "./style.css";
 
@@ -16,21 +17,22 @@ interface State {
     stats: TagStat[];
 }
 
-const tagPromise = firestore.collection("indexes").doc("tagStats").get();
-
-
 export default class TagListRoute extends Component<Props, State> {
+    public unsubscribeTagStats = () => {};
+
     public onSort = (sort: string, index?: number) => {
         const order = !(sort===this.props.sort && !index || this.props.index && 1*this.props.index===index) ? 'd' : (this.props.order==='d') ? 'a' : 'd';
         const sortRoute = "/tags?sort=" + sort + ( index!==undefined ? "&index=" + index : "" ) + "&order=" + order; 
         route(sortRoute, true);
     }
-
     public componentWillMount() {
-        tagPromise.then(doc => {
+        this.unsubscribeTagStats = tagStats.onSnapshot(doc => {
             const tags = doc.data() as TagStats;
             const stats = Object.values(tags).map(stat => ({...stat, totalTags: stat.containsTags+stat.descriptiveTags+stat.isTags }))
             this.setState({tags, stats})});      
+    }
+    public componentWillUnmount() {
+        this.unsubscribeTagStats();
     }
 
     public render({sort, index, order}: Props, {stats}: State) {

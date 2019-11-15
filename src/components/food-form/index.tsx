@@ -1,4 +1,5 @@
 import { Component, h } from 'preact';
+import { foodStats, tagFoodsIndex } from "../../state/indices";
 import { FoodType } from "../../types";
 import firebase from "../firebase";
 import { firestore } from '../firebase'
@@ -44,16 +45,16 @@ export default class FoodForm extends Component<Props, State> {
     }
     firestore.collection("foods").doc(this.props.id).update({...this.state, allTags, updated: firebase.firestore.FieldValue.serverTimestamp() });
     // update the last updated timestamp in the food index
-    const foodspaceUpdates: any = {};
-    foodspaceUpdates[`${this.props.id}.updated`] = firebase.firestore.FieldValue.serverTimestamp();
-    firestore.collection("indexes").doc("foodspace").update(foodspaceUpdates);
+    const foodStatUpdates: any = {};
+    foodStatUpdates[`${this.props.id}.updated`] = firebase.firestore.FieldValue.serverTimestamp();
+    foodStats.update(foodStatUpdates);
     // update the inverted index to add or remove this food from each of the tags
     if(additions.length + subtractions.length > 0){
       const tagFoodUpdates: any = {};
       additions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayUnion(this.props.id))
       subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = firebase.firestore.FieldValue.arrayRemove(this.props.id))
       console.log(tagFoodUpdates)
-      firestore.collection("indexes").doc("tagFoods").update(tagFoodUpdates);
+      tagFoodsIndex.update(tagFoodUpdates);
     }
 
     if(this.props.onSubmit) {
