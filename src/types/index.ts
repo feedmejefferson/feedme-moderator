@@ -32,6 +32,9 @@ export interface TagStat {
   isTags: number;
   descriptiveTags: number;
   totalTags?: number;
+  pretty: string;
+  neighbors: string[];
+  dims: number[];
 }
 export interface TagStats {
   [key: string]: TagStat

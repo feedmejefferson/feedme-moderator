@@ -4,18 +4,18 @@ import FoodLink from '../food-link';
 import * as style from "./style.css";
 
 interface Props {
-    foods: FoodType[];
+    foodIds: string[];
 }
 
 export default class FoodList extends Component<Props> {
-  public render({ foods }: Props) {
+  public render({ foodIds }: Props) {
     return (
       <div>
 
         <ul class={style.masonry}>
-    {foods.map(food => 
-      <li key={food.id} class={style.masonryBrick}>
-      <FoodLink {...food} />
+    {foodIds.map(food => 
+      <li key={food} class={style.masonryBrick}>
+      <FoodLink id={food} title={"Food Image " + food} />
       </li>)}
         </ul>
 

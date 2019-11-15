@@ -21,7 +21,6 @@ export default class TagDetail extends Component<Props> {
         </li>
         )}
         </ul>
-        <h2><Link activeClassName="" href={`/food?filter=${id}`}>Foods tagged with {id}</Link></h2>
       </div>
     );
   }
