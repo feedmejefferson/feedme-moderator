@@ -1,5 +1,5 @@
 import { Component, h } from 'preact';
-import { firestore } from "../../components/firebase";
+import { tagFoodsIndex } from '../../state/indices';
 import * as style from "./style.css";
 
 interface Props {
@@ -19,7 +19,6 @@ const filterSuggestions = (tags: string[], pattern: string): string[] => {
   const filterValue = pattern && pattern.toLowerCase() || "";
   return tags.filter(tag=>tag.startsWith(filterValue))
 }
-const tagPromise = firestore.collection("indexes").doc("tagIds").get();
 
 export default class TagSelector extends Component<Props, State> {
   public input: any = null;
@@ -30,11 +29,16 @@ export default class TagSelector extends Component<Props, State> {
     tags: []
   }
 
+  public unsubscribeInvertedIndex = () => {};
+
   public componentWillMount() {
-    tagPromise.then(doc => {
+    this.unsubscribeInvertedIndex = tagFoodsIndex.onSnapshot(doc => {
       const data = doc.data();
-      const tags = data && data.ids;
+      const tags = data && Object.keys(data) || [];
       this.setState({tags})});
+  }
+  public componentWillUnmount() {
+    this.unsubscribeInvertedIndex();
   }
 
 
