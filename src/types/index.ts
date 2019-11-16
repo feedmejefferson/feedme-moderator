@@ -40,5 +40,13 @@ export interface TagStat {
 export interface TagStats {
   [key: string]: TagStat
 }
+export interface FoodStat {
+  id: string;
+  neighbors: string[];
+  dims: number[];
+}
+export interface FoodStats {
+  [key: string]: FoodStat
+}
 
 

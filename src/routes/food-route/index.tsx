@@ -1,10 +1,10 @@
 import { Component, h } from "preact";
-import { auth, firestore } from "../../components/firebase"
-import Food from "../../components/food-detail";
+import { auth } from "../../components/firebase"
 import FoodDetail from "../../components/food-detail";
 import FoodForm from "../../components/food-form";
 import FoodVector from "../../components/food-vector";
-import { FoodSpace, FoodType } from "../../types";
+import { foodCollection, foodStats } from "../../state/indices";
+import { FoodStats, FoodType } from "../../types";
 import * as style from "./style.css";
 
 interface Props {
@@ -12,21 +12,23 @@ interface Props {
 }
 interface State {
     food?: FoodType;
-    foodspace?: FoodSpace;
+    stats?: FoodStats;
     edit?: boolean;
     user?: any;
 }
 
-const foodStore = firestore.collection("foods");
-const vectorStore = firestore.collection("foodspace");
-
 export default class FoodRoute extends Component<Props, State> {
     public unsubscribeAuth = () => { };
     public unsubscribeFoodStore = () => { };
+    public unsubscribeFoodStats = () => { };
 
     // gets called when this route is navigated to
     public componentDidMount() {
         this.unsubscribeAuth = auth.onAuthStateChanged(user => {this.setState({user})});
+        this.unsubscribeFoodStats = foodStats.onSnapshot(doc => {
+            const stats = doc.data() as FoodStats;
+            this.setState({stats})
+        });      
     }
 
     // gets called just before navigating away from the route
@@ -35,11 +37,11 @@ export default class FoodRoute extends Component<Props, State> {
         this.unsubscribeFoodStore();
     }
 
-    public render({foodId}: Props, { food, foodspace, edit, user }: State) {
+    public render({foodId}: Props, { food, stats, edit, user }: State) {
         // update the state if we need to render for a new tag id
         if(!food || food.id !==foodId) {
             this.unsubscribeFoodStore();
-            this.unsubscribeFoodStore = foodStore.doc(foodId).onSnapshot(doc => {
+            this.unsubscribeFoodStore = foodCollection.doc(foodId).onSnapshot(doc => {
                 const f = doc.data() as FoodType;
                 // fix issues where empty arrays come through as objects
                 if(!Array.isArray(f.isTags)) { f.isTags = []; }
@@ -48,17 +50,13 @@ export default class FoodRoute extends Component<Props, State> {
                 this.setState({edit: false, food: f})
             })    
         }
-        if(!foodspace || foodspace.id !==foodId) {
-            vectorStore.doc(foodId).get().then(doc => {
-                this.setState({foodspace: doc.data() as FoodSpace})
-            })    
-        }
         const Edit = () => {
             if(edit || !user) {
                 return null;
             }
             return <button onClick={() => this.setState({edit: true})}>Edit</button>
         }
+        const foodspace = stats && stats[foodId];
         return (
             <div class={style.tag}>
                 { !food ? "loading..." : <Edit/> }
