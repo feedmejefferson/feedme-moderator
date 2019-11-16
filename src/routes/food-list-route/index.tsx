@@ -12,6 +12,7 @@ interface Props {
     sort?: string;
     order?: string;
     index?: number;
+    highlight?: string;
 }
 
 interface State {
@@ -33,6 +34,7 @@ export default class FoodListRoute extends Component<Props, State> {
         const sortRoute = "/food?sort=" + sort + 
         ( index!==undefined ? "&index=" + index : "" ) + 
         ( this.props.filter!==undefined ? "&filter=" + this.props.filter : "" ) + 
+        ( this.props.highlight!==undefined ? "&highlight=" + this.props.highlight : "" ) + 
         "&order=" + order; 
         route(sortRoute, true);
     }
@@ -80,13 +82,22 @@ export default class FoodListRoute extends Component<Props, State> {
 
     public handleFilter = (tag: string) => {
         const filterRoute = "/food?filter=" + tag +
+        ( this.props.highlight!==undefined ? "&highlight=" + this.props.highlight : "" ) + 
         ( this.props.index!==undefined ? "&index=" + this.props.index : "" ) + 
         ( this.props.sort!==undefined ? "&sort=" + this.props.sort : "" ) + 
         ( this.props.order!==undefined ? "&order=" + this.props.order : "" );
         route(filterRoute, true);
     }
+    public handleHighlight = (tag: string) => {
+        const highlightRoute = "/food?highlight=" + tag +
+        ( this.props.filter!==undefined ? "&filter=" + this.props.filter : "" ) + 
+        ( this.props.index!==undefined ? "&index=" + this.props.index : "" ) + 
+        ( this.props.sort!==undefined ? "&sort=" + this.props.sort : "" ) + 
+        ( this.props.order!==undefined ? "&order=" + this.props.order : "" );
+        route(highlightRoute, true);
+    }
   
-    public render({ sort, order, index, filter }: Props, { stats, visibleCount, invertedIndex }: State) {
+    public render({ sort, order, index, filter, highlight }: Props, { stats, visibleCount, invertedIndex }: State) {
         if(!stats) { return ("loading...")}
 
         let sortedStats = stats;
@@ -107,12 +118,15 @@ export default class FoodListRoute extends Component<Props, State> {
         const showFoods = invertedIndex && filter && invertedIndex[filter];
         const f = showFoods ? (stat: any) => showFoods.foods.includes(stat.id): (stat: any) => true;
         const filteredStats = sortedStats.filter(f);
+        const highlightFoods = invertedIndex && highlight && invertedIndex[highlight] && invertedIndex[highlight].foods;
 
         return (
             
             <div class={style.profile}>
-                <h2>Filter by Tags</h2>
+                <h2>Filter by Tag</h2>
                 <TagSelector value={filter ? filter : ""} onSelect={this.handleFilter} onEscape={()=>{}} />
+                <h2>Highlight by Tag</h2>
+                <TagSelector value={highlight ? highlight : ""} onSelect={this.handleHighlight} onEscape={()=>{}} />
                 <h2>Sort by Updates or Characteristics</h2>
                 <p>
                 Sort foods by the last time it was 
@@ -122,7 +136,7 @@ export default class FoodListRoute extends Component<Props, State> {
                 { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i+1)}>{dim.left} / {dim.right}</button>)}
                 </p>
 
-                <FoodList foodIds={filteredStats.slice(0,visibleCount).map(stat => stat.id)}/>
+                <FoodList foodIds={filteredStats.slice(0,visibleCount).map(stat => stat.id)} highlightFoods={highlightFoods} />
                 { (visibleCount < filteredStats.length) && <button onClick={this.onMore}>More</button> }
 
             </div>

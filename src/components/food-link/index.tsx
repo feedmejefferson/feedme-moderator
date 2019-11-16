@@ -1,19 +1,21 @@
 import { Component, h } from 'preact';
 import { Link } from 'preact-router/match';
+import * as style from "./style.css";
 
 interface Props {
   id: string;
   title: string;
+  highlight?: boolean;
 }
 
 export default class FoodLink extends Component<Props> {
 
-    public render({ id, title }: Props) {
+    public render({ id, title, highlight }: Props) {
         return (
-          <Link activeClassName="" href={`/food/${id}`}>
-          <img alt={title} src={`https://storage.googleapis.com/karens-kitchen.appspot.com/assets/images/${id}.jpg`}/>
+          <a href={`/food/${id}`}>
+          <img class={highlight ? style.highlight : ""} alt={title} src={`https://storage.googleapis.com/karens-kitchen.appspot.com/assets/images/${id}.jpg`}/>
           { /* title */ }
-          </Link>
+          </a>
         );
     }
 }
