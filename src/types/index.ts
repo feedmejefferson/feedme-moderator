@@ -12,6 +12,7 @@ export interface FoodType {
   license: string;
   licenseUrl: string;
   updated?: any;
+  edited?: any;
 }
 export interface NeighborType {
   neighbors: string[];

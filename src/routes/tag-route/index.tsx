@@ -1,10 +1,9 @@
 import { Component, h } from "preact";
-import { route } from "preact-router";
 import { auth, FieldValue } from "../../components/firebase"
 import FoodList from "../../components/food-list";
 import TagDetail from "../../components/tag-detail";
-import { foodCollection, tagFoodsIndex, tagStats } from "../../state/indices";
-import { TagStat, TagStats, TagType } from "../../types";
+import { foodCollection, foodStats, tagFoodsIndex, tagStats } from "../../state/indices";
+import { TagStats } from "../../types";
 import * as style from "./style.css";
 
 interface Props {
@@ -26,12 +25,23 @@ export default class TagRoute extends Component<Props, State> {
     public handleNuclear = () => {
         // Delete all remnants of the tag (within reason)
         const tag = this.props.tagId;
-        const remove = FieldValue.arrayRemove(tag)
-        const foodUpdates = { isTags: remove, containsTags: remove, descriptiveTags: remove }; 
+        const remove = FieldValue.arrayRemove(tag);
+        const updated = FieldValue.serverTimestamp();
+        const foodUpdates = { 
+            isTags: remove, 
+            containsTags: remove, 
+            descriptiveTags: remove,
+            updated
+        }; 
         const invertedIndex = this.state.invertedIndex;
         const foodIds: string[] = invertedIndex && invertedIndex[tag] && invertedIndex[tag].foods;
         if(foodIds) {
-            foodIds.forEach(foodId => foodCollection.doc(foodId).update(foodUpdates));
+            const foodStatUpdates: any = {};
+            foodIds.forEach(foodId => {
+                foodCollection.doc(foodId).update(foodUpdates);
+                foodStatUpdates[`${foodId}.updated`]=updated;
+            });
+            foodStats.update(foodStatUpdates);
         }
  
         const deleteTag: any = {};

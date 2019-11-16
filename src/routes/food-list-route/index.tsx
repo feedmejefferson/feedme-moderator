@@ -1,12 +1,9 @@
 import { Component, h } from "preact";
 import { route } from 'preact-router';
 import { dimensions } from "../../components/fingerprint";
-import { firestore } from "../../components/firebase"
-import FoodLink from "../../components/food-link";
 import FoodList from "../../components/food-list"
 import TagSelector from "../../components/tag-selector";
 import { foodStats, tagFoodsIndex } from "../../state/indices"
-import { FoodType } from '../../types';
 import * as style from "./style.css";
 
 
@@ -99,7 +96,11 @@ export default class FoodListRoute extends Component<Props, State> {
                 const s = sort || "id"
                 const A = index ? a[s][index] : a[s]
                 const B = index ? b[s][index] : b[s]
-                return o * (A < B ? 1 : A > B ? -1 : 0); 
+                return o * ((A && B) 
+                    ? (A < B ? 1 : A > B ? -1 : 0) 
+                    // tree nulls, undefined (and false) as equal but less than everything
+                    : (!A && !B) ? 0 : (A ? -1 : 1) 
+                ); 
             }
             sortedStats = [...stats].sort(compare)    
         }
@@ -110,20 +111,18 @@ export default class FoodListRoute extends Component<Props, State> {
         return (
             
             <div class={style.profile}>
-                <h1>Filter by Tags</h1>
+                <h2>Filter by Tags</h2>
+                <TagSelector value={filter ? filter : ""} onSelect={this.handleFilter} onEscape={()=>{}} />
+                <h2>Sort by Updates or Characteristics</h2>
                 <p>
-                Sort foods by <button onClick={()=>this.onSort("updated")}>Last Updated</button>
+                Sort foods by the last time it was 
+                <button onClick={()=>this.onSort("updated")}>Updated</button> (including automtic updates),
+                <button onClick={()=>this.onSort("edited")}>Edited</button> (limited to manual edits), 
                 or one of the following meaning dimensions: 
                 { [...dimensions].splice(1).map((dim,i)=><button key={i} onClick={()=>this.onSort("dims",i+1)}>{dim.left} / {dim.right}</button>)}
                 </p>
 
-                <TagSelector value={filter ? filter : ""} onSelect={this.handleFilter} onEscape={()=>{}} />
-                <ul class={style.masonry}>
-                    {filteredStats.slice(0,visibleCount).map(stat => 
-                    <li key={stat.id} class={style.masonryBrick}>
-                    <FoodLink title="" id={stat.id} />
-                    </li>)}
-                </ul>
+                <FoodList foodIds={filteredStats.slice(0,visibleCount).map(stat => stat.id)}/>
                 { (visibleCount < filteredStats.length) && <button onClick={this.onMore}>More</button> }
 
             </div>

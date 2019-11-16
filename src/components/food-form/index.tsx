@@ -24,11 +24,14 @@ export default class FoodForm extends Component<Props, State> {
     e.preventDefault();
     // always update the food metadata itself do this first in case anything
     // goes wrong while attempting to update the indexes
-    foodCollection.doc(this.props.id).update({...this.state, updated: FieldValue.serverTimestamp() });
+    const updated = FieldValue.serverTimestamp();
+    foodCollection.doc(this.props.id).update({...this.state, updated, edited: updated });
 
     // update the last updated timestamp in the food index
     const foodStatUpdates: any = {};
-    foodStatUpdates[`${this.props.id}.updated`] = FieldValue.serverTimestamp();
+    foodStatUpdates[`${this.props.id}.updated`] = updated;
+    foodStatUpdates[`${this.props.id}.edited`] = updated;
+    console.log(foodStatUpdates)
     foodStats.update(foodStatUpdates);
 
     if(this.state.isTags || this.state.containsTags || this.state.descriptiveTags) {
@@ -112,7 +115,8 @@ export default class FoodForm extends Component<Props, State> {
               <p>Main Tags: <TagList tags={state.isTags || props.isTags} updateTags={(tags)=>this.setState({isTags: tags})}/></p>
               <p>Contains Tags: <TagList tags={state.containsTags || props.containsTags} updateTags={(tags)=>this.setState({containsTags: tags})}/></p>
               <p>Descriptive Tags: <TagList tags={state.descriptiveTags || props.descriptiveTags} updateTags={(tags)=>this.setState({descriptiveTags: tags})}/></p>
-              <p>last updated: {props.updated && props.updated instanceof Timestamp && props.updated.toDate().toISOString()}</p> 
+              <p>last edited: {props.edited && props.edited instanceof Timestamp && props.edited.toDate().toISOString()}</p>
+              <p>last updated: {props.updated && props.updated instanceof Timestamp && props.updated.toDate().toISOString()}</p>
               <button onClick={this.handleSubmit}>Submit</button>
             </form>
           </div>
