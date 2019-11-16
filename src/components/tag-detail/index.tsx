@@ -12,7 +12,7 @@ export default class TagDetail extends Component<Props> {
       <div>
         <h1>{id}</h1>
         <h2>Fingerprint</h2>
-        <Fingerprint dims={dims} />
+        { dims ? <Fingerprint dims={dims} /> : <p>No fingerprint available</p> }
         <h2>Similar Tags</h2>
         <ul>
         {neighbors && neighbors.map((n,i)=>

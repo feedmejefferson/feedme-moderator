@@ -16,6 +16,7 @@ interface State {
     tags: TagStats;
     stats: TagStat[];
 }
+const EMPTY_DIMS: number[] = [0,0,0,0,0,0,0,0,0,0,0,0];
 
 export default class TagListRoute extends Component<Props, State> {
     public unsubscribeTagStats = () => {};
@@ -28,7 +29,13 @@ export default class TagListRoute extends Component<Props, State> {
     public componentWillMount() {
         this.unsubscribeTagStats = tagStats.onSnapshot(doc => {
             const tags = doc.data() as TagStats;
-            const stats = Object.values(tags).map(stat => ({...stat, totalTags: stat.containsTags+stat.descriptiveTags+stat.isTags }))
+            // const stats = Object.values(tags).map(stat => ({...stat, totalTags: stat.containsTags+stat.descriptiveTags+stat.isTags }))
+            // handle elements that don't already have a redundant id attribute with their key value
+            // and ones that are missing a vector space (most likely because they were created on the fly)
+            const stats = Object.keys(tags).map(key => {
+                const stat = tags[key]
+                return {dims: EMPTY_DIMS, id: key, ...stat, totalTags: stat.containsTags+stat.descriptiveTags+stat.isTags }
+            })
             this.setState({tags, stats})});      
     }
     public componentWillUnmount() {

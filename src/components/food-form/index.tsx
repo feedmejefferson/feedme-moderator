@@ -40,49 +40,58 @@ export default class FoodForm extends Component<Props, State> {
       // This all really needs to get refactored into a nice function
       // way too much copy, paste, change here and there risk of typos
       let isTags = this.props.isTags;
+      let containsTags = this.props.containsTags;
+      let descriptiveTags = this.props.descriptiveTags;
+      const allOldTags = Array.from(new Set([...isTags, ...containsTags, ...descriptiveTags]));
+      const increment = FieldValue.increment(1);
+      const decrement = FieldValue.increment(-1);
+      const establish = FieldValue.increment(0);
+
       if(this.state.isTags) {
         const newTags = this.state.isTags;
         additions = [...newTags].filter(x => !isTags.includes(x))
         subtractions = [...isTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = FieldValue.increment(1));
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = FieldValue.increment(-1));
+        additions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = decrement);
         isTags = newTags;
       }
 
-      let containsTags = this.props.containsTags;
       if(this.state.containsTags) {
         const newTags = this.state.containsTags;
         additions = [...newTags].filter(x => !containsTags.includes(x))
         subtractions = [...containsTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = FieldValue.increment(1));
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = FieldValue.increment(-1));
+        additions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = decrement);
         containsTags = newTags;
       }
 
-      let descriptiveTags = this.props.descriptiveTags;
       if(this.state.descriptiveTags) {
         const newTags = this.state.descriptiveTags;
         additions = [...newTags].filter(x => !descriptiveTags.includes(x))
         subtractions = [...descriptiveTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = FieldValue.increment(1));
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = FieldValue.increment(-1));
+        additions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = decrement);
         descriptiveTags = newTags;
       }
 
-      tagStats.update(tagStatUpdates);
 
       // Finally, update the inverted index based on any or no changes
       // to the full set of all tags. Add or remove this food from each of the tags
       const allNewTags = Array.from(new Set([...isTags, ...containsTags, ...descriptiveTags]));
-      const allOldTags = Array.from(new Set([...this.props.isTags, ...this.props.containsTags, ...this.props.descriptiveTags]));
       additions = [...allNewTags].filter(x => !allOldTags.includes(x));
       subtractions = [...allOldTags].filter(x => !allNewTags.includes(x))
 
       if(additions.length + subtractions.length > 0){
         const tagFoodUpdates: any = {};
-        additions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayUnion(this.props.id))
+        additions.forEach(tag => {
+          tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayUnion(this.props.id)
+          if(!tagStatUpdates[`${tag}.isTags`]) { tagStatUpdates[`${tag}.isTags`] = establish; }
+          if(!tagStatUpdates[`${tag}.containsTags`]) { tagStatUpdates[`${tag}.containsTags`] = establish; }
+          if(!tagStatUpdates[`${tag}.descriptiveTags`]) { tagStatUpdates[`${tag}.descriptiveTags`] = establish; }
+        })
         subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayRemove(this.props.id))
-        console.log(tagFoodUpdates)
+
+        tagStats.update(tagStatUpdates);
         tagFoodsIndex.update(tagFoodUpdates);
       }
     }
