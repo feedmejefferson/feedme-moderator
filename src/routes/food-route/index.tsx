@@ -26,8 +26,8 @@ export default class FoodRoute extends Component<Props, State> {
     public componentDidMount() {
         this.unsubscribeAuth = auth.onAuthStateChanged(user => {this.setState({user})});
         this.unsubscribeFoodStats = foodStats.onSnapshot(doc => {
-            const stats = doc.data() as FoodStats;
-            this.setState({stats})
+            const stats = doc.data() as { data: FoodStats };
+            this.setState({stats: stats.data})
         });      
     }
 

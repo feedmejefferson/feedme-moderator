@@ -39,13 +39,13 @@ export default class TagRoute extends Component<Props, State> {
             const foodStatUpdates: any = {};
             foodIds.forEach(foodId => {
                 foodCollection.doc(foodId).update(foodUpdates);
-                foodStatUpdates[`${foodId}.updated`]=updated;
+                foodStatUpdates[`data.${foodId}.updated`]=updated;
             });
             foodStats.update(foodStatUpdates);
         }
  
         const deleteTag: any = {};
-        deleteTag[this.props.tagId] = FieldValue.delete();
+        deleteTag[`data.${this.props.tagId}`] = FieldValue.delete();
         tagStats.update(deleteTag);
         tagFoodsIndex.update(deleteTag);
 
@@ -58,12 +58,12 @@ export default class TagRoute extends Component<Props, State> {
     public componentDidMount() {
         this.unsubscribeAuth = auth.onAuthStateChanged(user => {this.setState({user})});
         this.unsubscribeTagStats = tagStats.onSnapshot(doc => {
-            const stats = doc.data() as TagStats;
-            this.setState({stats})
+            const stats = doc.data() as { data: TagStats };
+            this.setState({stats: stats.data})
         });
         this.unsubscribeInvertedIndex = tagFoodsIndex.onSnapshot(doc => {
-            const invertedIndex = doc.data();
-            this.setState({invertedIndex})
+            const invertedIndex = doc.data() as { data: any };
+            this.setState({invertedIndex: invertedIndex.data})
         });
     }
 

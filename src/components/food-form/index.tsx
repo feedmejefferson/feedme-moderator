@@ -29,8 +29,8 @@ export default class FoodForm extends Component<Props, State> {
 
     // update the last updated timestamp in the food index
     const foodStatUpdates: any = {};
-    foodStatUpdates[`${this.props.id}.updated`] = updated;
-    foodStatUpdates[`${this.props.id}.edited`] = updated;
+    foodStatUpdates[`data.${this.props.id}.updated`] = updated;
+    foodStatUpdates[`data.${this.props.id}.edited`] = updated;
     console.log(foodStatUpdates)
     foodStats.update(foodStatUpdates);
 
@@ -54,8 +54,8 @@ export default class FoodForm extends Component<Props, State> {
         const newTags = this.state.isTags;
         additions = [...newTags].filter(x => !isTags.includes(x))
         subtractions = [...isTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = increment);
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.isTags`] = decrement);
+        additions.forEach(tag => tagStatUpdates[`data.${tag}.isTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`data.${tag}.isTags`] = decrement);
         isTags = newTags;
       }
 
@@ -63,8 +63,8 @@ export default class FoodForm extends Component<Props, State> {
         const newTags = this.state.containsTags;
         additions = [...newTags].filter(x => !containsTags.includes(x))
         subtractions = [...containsTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = increment);
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.containsTags`] = decrement);
+        additions.forEach(tag => tagStatUpdates[`data.${tag}.containsTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`data.${tag}.containsTags`] = decrement);
         containsTags = newTags;
       }
 
@@ -72,8 +72,8 @@ export default class FoodForm extends Component<Props, State> {
         const newTags = this.state.descriptiveTags;
         additions = [...newTags].filter(x => !descriptiveTags.includes(x))
         subtractions = [...descriptiveTags].filter(x => !newTags.includes(x))
-        additions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = increment);
-        subtractions.forEach(tag => tagStatUpdates[`${tag}.descriptiveTags`] = decrement);
+        additions.forEach(tag => tagStatUpdates[`data.${tag}.descriptiveTags`] = increment);
+        subtractions.forEach(tag => tagStatUpdates[`data.${tag}.descriptiveTags`] = decrement);
         descriptiveTags = newTags;
       }
 
@@ -87,12 +87,12 @@ export default class FoodForm extends Component<Props, State> {
       if(additions.length + subtractions.length > 0){
         const tagFoodUpdates: any = {};
         additions.forEach(tag => {
-          tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayUnion(this.props.id)
-          if(!tagStatUpdates[`${tag}.isTags`]) { tagStatUpdates[`${tag}.isTags`] = establish; }
-          if(!tagStatUpdates[`${tag}.containsTags`]) { tagStatUpdates[`${tag}.containsTags`] = establish; }
-          if(!tagStatUpdates[`${tag}.descriptiveTags`]) { tagStatUpdates[`${tag}.descriptiveTags`] = establish; }
+          tagFoodUpdates[`data.${tag}.foods`] = FieldValue.arrayUnion(this.props.id)
+          if(!tagStatUpdates[`data.${tag}.isTags`]) { tagStatUpdates[`data.${tag}.isTags`] = establish; }
+          if(!tagStatUpdates[`data.${tag}.containsTags`]) { tagStatUpdates[`data.${tag}.containsTags`] = establish; }
+          if(!tagStatUpdates[`data.${tag}.descriptiveTags`]) { tagStatUpdates[`data.${tag}.descriptiveTags`] = establish; }
         })
-        subtractions.forEach(tag => tagFoodUpdates[`${tag}.foods`] = FieldValue.arrayRemove(this.props.id))
+        subtractions.forEach(tag => tagFoodUpdates[`data.${tag}.foods`] = FieldValue.arrayRemove(this.props.id))
 
         tagStats.update(tagStatUpdates);
         tagFoodsIndex.update(tagFoodUpdates);

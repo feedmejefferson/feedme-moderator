@@ -64,11 +64,12 @@ export default class FoodListRoute extends Component<Props, State> {
     public componentWillMount() {
         this.unsubscribeFoodStats = foodStats.onSnapshot(doc => {
             const foods = doc.data() || {};
-            const stats = Object.values(foods)
+            const stats = foods.data ? Object.values(foods.data) : []
             this.setState({foods, stats, visibleCount: pageSize})
         });      
         this.unsubscribeTagFoods = tagFoodsIndex.onSnapshot(doc => {
-            const invertedIndex = doc.data() || {};
+            const x = doc.data() || {};
+            const invertedIndex = x.data ? x.data : {};
             this.setState({invertedIndex})
         });      
     }

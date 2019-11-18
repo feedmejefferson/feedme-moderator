@@ -1,8 +1,8 @@
 // import firebase from "../components/firebase";
 import { firestore } from '../components/firebase'
 
-export const INDEX_COLLECTION = "indexes"
-export const FOOD_STATS_DOC_NAME = "foodspace"
+export const INDEX_COLLECTION = "indices"
+export const FOOD_STATS_DOC_NAME = "foodStats"
 export const TAG_STATS_DOC_NAME = "tagStats"
 export const TAG_TO_FOOD_DOC_NAME = "tagFoods"
 

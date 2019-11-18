@@ -34,7 +34,7 @@ export default class TagSelector extends Component<Props, State> {
   public componentWillMount() {
     this.unsubscribeInvertedIndex = tagFoodsIndex.onSnapshot(doc => {
       const data = doc.data();
-      const tags = data && Object.keys(data) || [];
+      const tags = data && data.data && Object.keys(data.data) || [];
       this.setState({tags})});
   }
   public componentWillUnmount() {
