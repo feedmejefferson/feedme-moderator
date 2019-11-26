@@ -15,6 +15,11 @@ interface State {
   userInput?: string;
   tags: string[];
 }
+
+const canonicalizeTag = (value: string) => {
+  return value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
+}
+
 const filterSuggestions = (tags: string[], pattern: string): string[] => {
   const filterValue = pattern && pattern.toLowerCase() || "";
   return tags.filter(tag=>tag.startsWith(filterValue))
@@ -46,7 +51,7 @@ export default class TagSelector extends Component<Props, State> {
     
   public select(value: string) {
     this.setState({userInput: value, filteredSuggestions: [value], activeSuggestion: 0})
-    this.props.onSelect(value)
+    this.props.onSelect(canonicalizeTag(value))
   }
   public escape = () => {
     this.setState({showSuggestions: false})
@@ -131,7 +136,7 @@ export default class TagSelector extends Component<Props, State> {
       </div>
     );
   }
-  public componentDidMount(){
+  public componentDidUpdate(){
     if(this.input && this.props.focus) {
       this.input.focus()
     }

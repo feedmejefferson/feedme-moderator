@@ -87,6 +87,10 @@ R code (using new data food metadata instead of legacy) -->
     ...
 ```
 
+1. run curate-favorites.R and word-tree.R (need to refactor this all into one streamlined script)
+2. copy `feedme-data/tag-analysis/moderator` folder contents to staging location for conversion
+3. convert using ladle
+
 ### Change Tracking / Reconciliation
 
 We should throw all of the exported data into a git repo and commit each time we do a new export. This will let us roll back to previous states by importing from an old commit. 
@@ -101,3 +105,9 @@ We should throw all of the exported data into a git repo and commit each time we
 It would be nice if real time updates can update the indexes as much as possible, however there are some stats that we just won't be able to update completely online and those will have to rely on offline batch processes. I have a feeling that our indexes might slowly get out of sync even if we do make our best effort to update them in real time.
 
 > It might be nice to have a process that reconciles the realtime updated indexes with the batch process generated ones just to see how quickly which values get out of sync.
+
+### Firestore Indexing
+
+Apparently firestore autoindexes all of the fields in your collection (assuming the documents in your collection follow a common schema). There's a limit to the index size and the more fields you have in your documents, the bigger the index. You can setup exemptions to disable indexing for specific fields, but there's a limit of 200 exemptions per collection.
+
+The recommendation in cases like this is apparently to burry all of your fields in a map object and make that the value of a single field. It's a bit of a hack and a pain, but it worked to get us past the limit when we scaled up to all of our foods. 

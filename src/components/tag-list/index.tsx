@@ -43,7 +43,7 @@ export default class TagList extends Component<Props, State> {
     return (
       <ul class={style.tagList} >
         {tags && Array.isArray(tags) && tags.map((tag, i)=>(
-          <li key={i} class={style.tagListItem}>
+          <li key={tag} class={style.tagListItem}>
             <Tag tag={tag} offset={i}
             editable={i===active} 
             onDelete={this.onDelete} 
